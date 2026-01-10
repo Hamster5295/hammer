@@ -22,6 +22,6 @@ Currently there're only a few simple tools separated in source files.
 You can get a brief knowledge about what `hammer` provides through reading the file names.  
 
 File Organization:
-* `utils` - **Compile Time** utils that helps creating hardware faster
+* `chisel` - **Compile Time** utils that helps creating hardware faster
 * `model` - Golden model for various data structures for testbench purposes
 * `test` - Utils for writing better and faster tests
