@@ -20,7 +20,7 @@ object RegOut {
     * @param io The io to apply 
     * @return The buffered bundle
     */
-  def apply(io: Bundle): Bundle = {
+  def apply[T <: Bundle](io: T): T = {
     val out = Wire(chiselTypeOf(io))
     for ((name, data) <- out.elements) {
       if (DataMirror.specifiedDirectionOf(data) == SpecifiedDirection.Output) {

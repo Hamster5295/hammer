@@ -25,6 +25,23 @@ package object hammer {
       */
     def msb(idx: Int): Bool = self(self.getWidth - 1 - idx)
 
+    /**
+      * Get a block of data from UInt.
+      * The block is defined by its size.
+      * 
+      * This is equal to
+      * ```scala
+      * value(index * (size + 1) - 1, index * size)
+      * ```
+      * 
+      *
+      * @param index
+      * @param size
+      * @return
+      */
+    def block(index: Int, size: Int): UInt =
+      self(index * size + size - 1, index * size)
+
   }
 
   implicit class VecExtensions[T <: Data](self: Vec[T]) {
