@@ -23,7 +23,7 @@ class ExportedModule(
   require(field != null, "Exported Module must have a 'io' field!")
 
   val innerIO    = field.get.asInstanceOf[Bundle]
-  val bufferedIO = RegOut(innerIO)
+  val bufferedIO = if (useOutputBuffer) RegOut(innerIO) else innerIO
   val io         = IO(chiselTypeOf(innerIO))
   io <> bufferedIO
 }

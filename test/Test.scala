@@ -1,4 +1,4 @@
-package hammar.test
+package hammer.test
 
 import chisel3._
 import chisel3.experimental.SourceInfo

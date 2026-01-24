@@ -24,14 +24,19 @@ class Fp(expWidth: Int, manWidth: Int)(sign: Int, exp: Int, man: Int) {
     )
   }
 
-  def +(other: Fp):  Float  = toFloat + other.toFloat
-  def *(other: Fp):  Float  = toFloat * other.toFloat
-  def *%(other: Fp): BigInt =
-    BigInt(lang.Float.floatToIntBits(this * other).toHexString, 16)
+  def +(other:  Fp): Float  = toFloat + other.toFloat
+  def *(other:  Fp): Float  = toFloat * other.toFloat
+  def *%(other: Fp): BigInt = Fp.asBigInt(this * other)
 }
 
 object Fp {
   private val rand = new Random
+
+  def asBigInt(value: Float) =
+    BigInt(lang.Float.floatToIntBits(value).toHexString, 16)
+
+  def asBigInt(value: Double) =
+    BigInt(lang.Double.doubleToLongBits(value).toHexString, 16)
 
   /**
     * Generate a Float-Point value with specified format
@@ -44,6 +49,7 @@ object Fp {
     */
   def random(expWidth: Int, manWidth: Int): Fp = {
     val bias = (math.pow(2, expWidth).toInt - 2) / 2
+
     new Fp(expWidth, manWidth)(
       if (rand.nextBoolean()) 1 else 0,
       rand.nextInt(bias * 2) - bias + 1,
@@ -56,14 +62,14 @@ object Fp {
     *
     * @return The random value
     */
-  def f16:  Fp = random(5, 10)
+  def f16: Fp = random(5, 10)
 
   /**
     * Generate a BFloat16
     *
     * @return The random value
     */
-  def b16:  Fp = random(8, 7)
+  def b16: Fp = random(8, 7)
 
   /**
     * Generate a Float8 E3M4

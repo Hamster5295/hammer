@@ -1,4 +1,5 @@
 import chisel3._
+import chisel3.util.Fill
 
 package object hammer {
 
@@ -17,13 +18,13 @@ package object hammer {
       * 
       * Example:
       * ```scala
-      * "0b10101".U.msb(1)  // Gets the second highest bit 0
+      * "b10101".U.msb(1)  // Gets the second highest bit 0
       * ```
       *
       * @param idx
       * @return
       */
-    def msb(idx: Int): Bool = self(self.getWidth - 1 - idx)
+    def msb(idx: Int = 0): Bool = self(self.getWidth - 1 - idx)
 
     /**
       * Get a block of data from UInt.
@@ -34,13 +35,29 @@ package object hammer {
       * value(index * (size + 1) - 1, index * size)
       * ```
       * 
-      *
       * @param index
       * @param size
       * @return
       */
     def block(index: Int, size: Int): UInt =
       self(index * size + size - 1, index * size)
+
+    /**
+      * Pad at the lsb of the UInt to specified width
+      * 
+      * Example
+      * ```scala
+      * "b1010".U.rpad(6)       // b101000
+      * "b1010".U.rpad(6, 1)    // b101011
+      * ```
+      *
+      * @param width The target width
+      * @param bit The filling bit, 0 for 0 and non-0 for 1
+      * @return
+      */
+    def rpad(width: Int, bit: Int = 0): UInt =
+      if (self.getWidth >= width) self
+      else self ## Fill(width - self.getWidth, (if (bit == 0) 0 else 1).U)
 
   }
 
