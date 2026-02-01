@@ -2,6 +2,7 @@ package hammer
 
 import chisel3._
 import circt.stage.ChiselStage
+import scala.language.existentials
 
 class ExportedModule(
     gen:  => Module,
