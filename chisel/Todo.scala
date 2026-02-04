@@ -13,11 +13,11 @@ object TODO {
     * @param message The custom message. You can provide more information here
     * @return `0.U`
     */
-  def apply(message: String): UInt = {
+  def apply(message: String, chiselType: Data = 0.U): Data = {
     val trace = Thread.currentThread().getStackTrace()(2)
     println(
       s"${YELLOW}TODO unimplemented at ${trace.getFileName()}:${trace.getLineNumber()}: $message$RESET"
     )
-    0.U
+    Zero(chiselType)
   }
 }

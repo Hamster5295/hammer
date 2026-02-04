@@ -16,4 +16,3 @@ object SignExt {
     if (input.getWidth >= len) return input
     else return Fill(len - input.getWidth, input.head(1)) ## input
 }
-
