@@ -12,5 +12,28 @@ object Zero {
     * @param data The data type to be tied down. We don't care about its value here.
     * @return The zero corresponding to the given type
     */
-  def apply(data: Data) = 0.U.asTypeOf(chiselTypeOf(data))
+  def apply[T <: Data](data: T): T = 0.U.asTypeOf(data)
+}
+
+object RegZero {
+
+  /**
+    * Create a register with 0 as reset value
+    *
+    * @param t The data type of the reg
+    * @return The register
+    */
+  def apply[T <: Data](t: T): T = RegInit(Zero(t))
+}
+
+
+object WireZero {
+
+  /**
+    * Create a wire with 0 as reset value
+    *
+    * @param t The data type of the wire
+    * @return The wire
+    */
+  def apply[T <: Data](t: T): T = WireInit(Zero(t))
 }

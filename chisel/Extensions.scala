@@ -97,6 +97,28 @@ package object hammer {
     def rpad(width: Int, bit: Int = 0): UInt =
       if (self.getWidth >= width) self
       else self ## Fill(width - self.getWidth, (if (bit == 0) 0 else 1).U)
+
+    /**
+      * Convert UInt to binary string
+      *
+      * @return The binary string with minimum required width
+      */
+    def toBin = self.litValue.toString(2)
+
+    /**
+      * Convert UInt to binary string with specified width
+      * 
+      * If len < minimum required width, then the result is truncated  
+      * If len > minimum required width, '0's are appended on the msb
+      *
+      * @param len The target length
+      * @return The binary string
+      */
+    def toBin(len: Int): String = {
+      val origin = self.litValue.toString(2)
+      if (origin.length() >= len) return origin.substring(0, len)
+      else return "0" * (len - origin.length()) + origin
+    }
   }
 
   implicit class VecExt[T <: Data](self: Vec[T]) {
@@ -220,7 +242,10 @@ package object hammer {
       val subM  = m.reflect(sub)
 
       val map = subM.symbol.info.members.collect {
-        case mem if !mem.isMethod && mem.isTerm => {
+        case mem
+            if !mem.isMethod && mem.isTerm && subM.reflectField(
+              mem.asTerm
+            ).get.isInstanceOf[Data] => {
           (
             mem.name.toString.trim(),
             subM.reflectField(
@@ -231,7 +256,10 @@ package object hammer {
       }.toMap.withDefaultValue(null)
 
       selfM.symbol.info.members.collect {
-        case mem if !mem.isMethod && mem.isTerm => {
+        case mem
+            if !mem.isMethod && mem.isTerm && subM.reflectField(
+              mem.asTerm
+            ).get.isInstanceOf[Data] => {
           (
             mem.name.toString.trim(),
             selfM.reflectField(
@@ -254,6 +282,11 @@ package object hammer {
               f" sub.$name%-16s << self.$name%-16s"
             )
             el := target
+          } else {
+            if (debug) println(
+              f" sub.$name%-16s <> self.$name%-16s"
+            )
+            el <> target
           }
         }
       }

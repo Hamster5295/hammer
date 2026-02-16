@@ -64,13 +64,3 @@ object RegOut {
   }
 }
 
-object RegZero {
-
-  /**
-    * Create a register with 0 as reset value
-    *
-    * @param t The data type of the reg
-    * @return The register
-    */
-  def apply[T <: Data](t: Data) = RegInit(Zero(t))
-}
