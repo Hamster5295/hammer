@@ -32,6 +32,40 @@ package object hammer {
     def msb(idx: Int = 0): Bool = self(self.getWidth - 1 - idx)
 
     /**
+      * Similar to UInt.extract, with negative index support
+      * 
+      * Example:
+      * ```scala
+      * "b10001".get(-1)    // 1
+      * "b10001".get(-2)    // 0
+      * ```
+      * 
+      * @param idx The index to get
+      * @return The target bit
+      */
+    def get(idx: Int): Bool =
+      self(if (idx < 0) self.getWidth + idx else idx)
+
+    /**
+      * Similar to UInt.extract, with negative index support
+      * 
+      * Example:
+      * ```scala
+      * "b10001".get(-1, -2)    // b10
+      * "b10001".get(-2, -5)    // b0001
+      * ```
+      * 
+      * @param left The left border to get (inclusive)
+      * @param right The right border to get (inclusive)
+      * @return The target bit
+      */
+    def get(left: Int, right: Int): UInt =
+      self(
+        if (left < 0) self.getWidth + left else left,
+        if (right < 0) self.getWidth + right else right
+      )
+
+    /**
       * Get a block of data from UInt.
       * The block is defined by its size.
       * 
