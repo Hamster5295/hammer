@@ -1,12 +1,14 @@
 package hammer
 
 import chisel3._
+import chisel3.stage.ChiselGeneratorAnnotation
 import circt.stage.ChiselStage
+import circt.stage.FirtoolOption
 import scala.language.existentials
 
 class ExportedModule(
     gen:  => Module,
-    name: String = "RegWrapper"
+    name: String = "Top"
 )(useOutputBuffer: Boolean = true) extends Module {
 
   override def desiredName: String = name
@@ -40,19 +42,33 @@ object Export {
     * @param useOutputBuffer If true, all the outputs will be wrapped with registers, Useful if you're going Synthesis the design for timing reports
     */
   def apply(
-      gen:             => Module,
-      path:            String,
-      firOpts:         Array[String] = Array(),
-      useOutputBuffer: Boolean = true,
-      usePathPrefix:   Boolean = true
-  ): Unit =
-    ChiselStage.emitSystemVerilogFile(
-      new ExportedModule(gen, "Top")(useOutputBuffer),
-      firtoolOpts = Array(
-        "-disable-all-randomization",
-        "-strip-debug-info",
-        "-default-layer-specialization=enable"
-      ) ++ firOpts,
-      args = Array("--target-dir", (if (usePathPrefix) "build/" else "") + path)
+      gen:              => Module,
+      path:             String,
+      firOpts:          Array[String] = Array(),
+      splitVerilog:     Boolean = true,
+      withOutputBuffer: Boolean = true,
+      withPathPrefix:   Boolean = true
+  ): Unit = {
+
+    var args = Array(
+      "--target",
+      "systemverilog",
+      "--target-dir",
+      (if (withPathPrefix) "build/" else "") + path
     )
+
+    if (splitVerilog) args :+= "--split-verilog"
+
+    val firtoolOpts = Array(
+      "-disable-all-randomization",
+      "-strip-debug-info",
+      "-default-layer-specialization=enable"
+    ) ++ firOpts
+
+    (new ChiselStage).execute(
+      args,
+      Seq(ChiselGeneratorAnnotation(() => new ExportedModule(gen, "Top")(withOutputBuffer))) ++
+        firtoolOpts.map(FirtoolOption(_))
+    )
+  }
 }
