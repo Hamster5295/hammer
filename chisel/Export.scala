@@ -43,7 +43,8 @@ object Export {
       gen:             => Module,
       path:            String,
       firOpts:         Array[String] = Array(),
-      useOutputBuffer: Boolean = true
+      useOutputBuffer: Boolean = true,
+      usePathPrefix:   Boolean = true
   ): Unit =
     ChiselStage.emitSystemVerilogFile(
       new ExportedModule(gen, "Top")(useOutputBuffer),
@@ -52,6 +53,6 @@ object Export {
         "-strip-debug-info",
         "-default-layer-specialization=enable"
       ) ++ firOpts,
-      args = Array("--target-dir", "build/" + path)
+      args = Array("--target-dir", (if (usePathPrefix) "build/" else "") + path)
     )
 }
