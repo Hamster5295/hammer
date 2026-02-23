@@ -5,10 +5,13 @@ import chisel3.util._
 import hammer.model.Fixed
 
 class SaturateCounterIO(width: Int) extends Bundle {
-  val enable = Input(Bool())
-  val op     = Input(Bool())
-  val value  = Output(UInt(width.W))
-  val next   = Output(UInt(width.W))
+  val enable   = Input(Bool())
+  val op       = Input(Bool())
+  val set      = Input(Bool())
+  val setValue = Input(UInt(width.W))
+
+  val value = Output(UInt(width.W))
+  val next  = Output(UInt(width.W))
 }
 
 class SaturateCounter(width: Int, init: BigInt) extends Module {
@@ -19,10 +22,11 @@ class SaturateCounter(width: Int, init: BigInt) extends Module {
   val isMin = value === 0.U(width.W)
 
   val next = MuxIf(
-    !io.enable                          -> value,
-    (isMax && io.op || isMin && !io.op) -> value,
-    io.op                               -> (value +% 1.U),
-    !io.op                              -> (value -% 1.U)
+    io.set                                  -> io.setValue,
+    !io.enable                              -> value,
+    ((isMax && io.op) || (isMin && !io.op)) -> value,
+    io.op                                   -> (value +% 1.U),
+    !io.op                                  -> (value -% 1.U)
   )(value)
 
   value := next

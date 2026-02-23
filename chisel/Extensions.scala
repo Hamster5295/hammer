@@ -169,6 +169,19 @@ package object hammer {
     def block(index: Int, size: Int): Vec[T] =
       get(index * size, index * size + size)
 
+    /**
+      * Create a Vec of `DataWithIndex` with original Vec
+      * 
+      * The `idx` of each element is an UInt Wire of the corresponding index, which is really helpful in constructing a hardware list or map.
+      *
+      * @param idxWidth The width of the `idx` wire
+      * @return 
+      */
+    def withIndex(idxWidth : Int): Vec[DataWithIndex[T]] =
+      VecInit(self.zipWithIndex.map { case (data, idx) =>
+        DataWithIndex(data, idx, idxWidth)
+      })
+
   }
 
   implicit class SeqExt[T <: Data](self: Seq[T]) {
