@@ -270,7 +270,7 @@ package object hammer {
 
       selfM.symbol.info.members.collect {
         case mem
-            if !mem.isMethod && mem.isTerm && subM.reflectField(
+            if !mem.isMethod && mem.isTerm && selfM.reflectField(
               mem.asTerm
             ).get.isInstanceOf[Data] => {
           (

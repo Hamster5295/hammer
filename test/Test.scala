@@ -2,9 +2,74 @@ package hammer.test
 
 import chisel3._
 import chisel3.experimental.SourceInfo
-import chisel3.simulator.FailedExpectationException
-import chisel3.simulator.PeekPokeAPI
+import chisel3.simulator._
+import chisel3.testing.HasTestingDirectory
 import io.AnsiColor._
+import svsim.verilator.Backend.CompilationSettings
+
+object Waveform extends Enumeration {
+  val Fst, Vcd = Value
+}
+
+object Sim extends SimulatorAPI {
+
+  /**
+    * This method is almost identical to `simulate` in SimulatorAPI, supporting the selection the target waveform format
+    * 
+    * The default format is FST which is space-efficient compared to VCD
+    *
+    * @param module The module to test
+    * @param stimulus The testing function
+    */
+  def apply[T <: Module](
+      module:                => T,
+      waveform:              Waveform.Value = Waveform.Fst,
+      chiselOpts:            Array[String] = Array.empty,
+      firtoolOpts:           Array[String] = Array.empty,
+      settings:              Settings[T] = Settings.default[T],
+      additionalResetCycles: Int = 0,
+      subdirectory:          Option[String] = None
+  )(stimulus: (T) => Unit)(
+      implicit
+      testingDirectory:             HasTestingDirectory,
+      chiselOptsModifications:      ChiselOptionsModifications,
+      firtoolOptsModifications:     FirtoolOptionsModifications,
+      commonSettingsModifications:  svsim.CommonSettingsModifications,
+      backendSettingsModifications: svsim.BackendSettingsModifications
+  ): Unit = {
+    val verilatorSettings = new CompilationSettings(
+      traceStyle = Some(
+        CompilationSettings.TraceStyle(
+          waveform match {
+            case Waveform.Fst => CompilationSettings.TraceKind.Fst(Some(2))
+            case _            => CompilationSettings.TraceKind.Vcd
+          },
+          traceUnderscore = true,
+          maxArraySize = Some(1024),
+          maxWidth = Some(1024),
+          traceDepth = Some(1024)
+        )
+      ),
+      outputSplit = None,
+      outputSplitCFuncs = None,
+      disabledWarnings = Seq(),
+      disableFatalExitOnWarnings = false,
+      enableAllAssertions = false,
+      timing = None
+    )
+    implicit val verilator =
+      HasSimulator.simulators.verilator(verilatorSettings = verilatorSettings)
+
+    simulate(
+      module,
+      chiselOpts,
+      firtoolOpts,
+      settings,
+      additionalResetCycles,
+      subdirectory
+    )(stimulus)
+  }
+}
 
 object Test extends PeekPokeAPI {
 

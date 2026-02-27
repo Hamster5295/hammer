@@ -9,7 +9,7 @@ import scala.language.existentials
 class ExportedModule(
     gen:  => Module,
     name: String = "Top"
-)(useOutputBuffer: Boolean = true) extends Module {
+)(withOutputBuffer: Boolean = true) extends Module {
 
   override def desiredName: String = name
 
@@ -26,7 +26,7 @@ class ExportedModule(
   require(field != null, "Exported Module must have a 'io' field!")
 
   val innerIO    = field.get.asInstanceOf[Bundle]
-  val bufferedIO = if (useOutputBuffer) RegOut(innerIO) else innerIO
+  val bufferedIO = if (withOutputBuffer) RegOut(innerIO) else innerIO
   val io         = IO(chiselTypeOf(innerIO))
   io <> bufferedIO
 }
@@ -39,7 +39,7 @@ object Export {
     * @param gen The module to export
     * @param path The path to save source files. The final path will be `{Project Root}/build/{path}`
     * @param firOpts Firrtl options
-    * @param useOutputBuffer If true, all the outputs will be wrapped with registers, Useful if you're going Synthesis the design for timing reports
+    * @param withOutputBuffer If true, all the outputs will be wrapped with registers, Useful if you're going Synthesis the design for timing reports
     */
   def apply(
       gen:              => Module,
