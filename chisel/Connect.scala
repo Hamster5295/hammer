@@ -20,13 +20,13 @@ object Connect {
     )
 
     if (DataMirror.specifiedDirectionOf(dst) == SpecifiedDirection.Output) {
-      if (flipped) src := RegNext(dst)
-      else dst         := RegNext(src)
+      if (flipped) dstToSrc(src, dst)
+      else srcToDst(src, dst)
     } else if (
       DataMirror.specifiedDirectionOf(dst) == SpecifiedDirection.Input
     ) {
-      if (flipped) dst := src
-      else src         := dst
+      if (flipped) srcToDst(src, dst)
+      else dstToSrc(src, dst)
     } else if (src.isInstanceOf[Aggregate]) {
       val srcAgg = src.asInstanceOf[Aggregate]
       val dstAgg = dst.asInstanceOf[Aggregate]
