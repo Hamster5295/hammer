@@ -53,14 +53,7 @@ object RegOut {
     */
   def apply[T <: Bundle](io: T): T = {
     val out = Wire(chiselTypeOf(io))
-    for ((name, data) <- out.elements) {
-      if (DataMirror.specifiedDirectionOf(data) == SpecifiedDirection.Output) {
-        data := RegNext(io.elements(name))
-      } else {
-        io.elements(name) := data
-      }
-    }
+    Connect(io, out, srcToDst = (s, d) => d := RegNext(s))
     out
   }
 }
-
