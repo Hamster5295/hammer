@@ -43,7 +43,8 @@ object Connect {
         )
       }
     } else {
-      println(
+      require(
+        false,
         s"${RED}Unable to connect signal '$src' -> '$dst': Cannot determine direction$RESET"
       )
 
