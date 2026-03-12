@@ -67,7 +67,9 @@ object Export {
 
     (new ChiselStage).execute(
       args,
-      Seq(ChiselGeneratorAnnotation(() => new ExportedModule(gen, "Top")(withOutputBuffer))) ++
+      Seq(ChiselGeneratorAnnotation(() =>
+        new ExportedModule(gen, "Top")(withOutputBuffer)
+      )) ++
         firtoolOpts.map(FirtoolOption(_))
     )
   }

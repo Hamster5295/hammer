@@ -3,6 +3,7 @@ package hammer
 import chisel3._
 import chisel3.experimental.requireIsHardware
 import chisel3.reflect.DataMirror
+import chisel3.util.RegEnable
 
 object RegNxt {
 
@@ -55,5 +56,20 @@ object RegOut {
     val out = Wire(chiselTypeOf(io))
     Connect(io, out, srcToDst = (s, d) => d := RegNext(s))
     out
+  }
+}
+
+object RegFlush {
+  def apply[T <: Data](
+      next:   T,
+      enable: Bool,
+      flush:  Bool
+  ): T = {
+    val r = RegInit(Zero(next))
+    r := MuxIf(
+      flush   -> Zero(next),
+      !enable -> r
+    )(next)
+    r
   }
 }

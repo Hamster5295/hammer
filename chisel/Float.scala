@@ -17,7 +17,8 @@ object Float {
     )
     require(
       bits.getWidth == 1 + expWidth + manWidth,
-      s"The width of 'bits' [${bits.getWidth}] != Provided schema [${1 + expWidth + manWidth}]"
+      s"The width of 'bits' [${bits.getWidth}] != Provided schema [${1 +
+          expWidth + manWidth}]"
     )
     require(
       expWidth > 1,

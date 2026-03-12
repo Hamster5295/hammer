@@ -177,7 +177,7 @@ package object hammer {
       * @param idxWidth The width of the `idx` wire
       * @return 
       */
-    def withIndex(idxWidth : Int): Vec[DataWithIndex[T]] =
+    def withIndex(idxWidth: Int): Vec[DataWithIndex[T]] =
       VecInit(self.zipWithIndex.map { case (data, idx) =>
         DataWithIndex(data, idx, idxWidth)
       })

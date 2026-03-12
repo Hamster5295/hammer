@@ -37,9 +37,10 @@ object Connect {
           d,
           srcToDst,
           dstToSrc,
-          flipped ^ (DataMirror.specifiedDirectionOf(
-            src
-          ) == SpecifiedDirection.Flip)
+          flipped ^
+            (DataMirror.specifiedDirectionOf(
+              src
+            ) == SpecifiedDirection.Flip)
         )
       }
     } else {

@@ -26,7 +26,6 @@ object RegZero {
   def apply[T <: Data](t: T): T = RegInit(Zero(t))
 }
 
-
 object WireZero {
 
   /**
