@@ -234,6 +234,61 @@ package object hammer {
 
       recReduce(self, reduceOp, layerOp, 0)
     }
+
+    /**
+      * Reduce a seq of Data by tree  
+      * 
+      * This is really similar to Chisel's Vec.reduceTree, with slight difference on ops
+      * 
+      * i.e. The ops now receives 2 Int parameter indicating the layer index and reduction op index respectively
+      *
+      * @param reduceOp The reduce operation
+      * @param layerOp The operation when this element is bypassed to the next layer (e.g. not selected due to not being a power of 2)
+      * @return The reduced value
+      */
+    def treeReduce(
+        reduceOp: (Int, Int, T, T) => T,
+        layerOp:  (Int, T) => T
+    ) = {
+      require(self.length > 0, "Cannot apply reduction on a seq of size 0")
+
+      var idx = 0
+
+      def recReduce[T](
+          seq:      Seq[T],
+          reduceOp: (Int, Int, T, T) => T,
+          layerOp:  (Int, T) => T,
+          layer:    Int
+      ): T = {
+        val n = seq.length
+        n match {
+          case 1 => layerOp(layer, seq(0))
+          case 2 => {
+            idx += 1
+            return reduceOp(layer, idx - 1, seq(0), seq(1))
+          }
+          case _ =>
+            val m = pow(
+              2,
+              floor(log10(n - 1) / log10(2))
+            ).toInt // number of nodes in next level, will be a power of 2
+            val p = 2 * m - n // number of nodes promoted
+
+            val l = seq.take(p).map(i => layerOp(layer, i))
+            val r = seq
+              .drop(p)
+              .grouped(2)
+              .map { case Seq(a, b) =>
+                idx += 1
+                reduceOp(layer, idx - 1, a, b)
+              }
+              .toVector
+            recReduce(l ++ r, reduceOp, layerOp, layer + 1)
+        }
+      }
+
+      recReduce(self, reduceOp, layerOp, 0)
+    }
   }
 
   implicit class BundleExt(self: Bundle) {
