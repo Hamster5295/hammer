@@ -4,6 +4,7 @@ import chisel3.reflect.DataMirror
 import chisel3.util._
 import java.lang.Math._
 import os.Source.WritableSource
+import scala.annotation.elidable
 import scala.reflect.runtime.universe._
 
 package object hammer {
@@ -302,62 +303,32 @@ package object hammer {
       * @param debug Print all the connections when you think this operator is not functioning normally
       */
     def :>>(sub: Bundle)(implicit debug: Boolean = false): Unit = {
-
-      // Reflect to get all signals in a bundle
-      val ru    = scala.reflect.runtime.universe
-      val m     = ru.runtimeMirror(getClass.getClassLoader)
-      val selfM = m.reflect(self)
-      val subM  = m.reflect(sub)
-
-      val map = subM.symbol.info.members.collect {
-        case mem
-            if !mem.isMethod && mem.isTerm && subM.reflectField(
-              mem.asTerm
-            ).get.isInstanceOf[Data] => {
-          (
-            mem.name.toString.trim(),
-            subM.reflectField(
-              mem.asTerm
-            ).get.asInstanceOf[Data]
-          )
-        }
-      }.toMap.withDefaultValue(null)
-
-      selfM.symbol.info.members.collect {
-        case mem
-            if !mem.isMethod && mem.isTerm && selfM.reflectField(
-              mem.asTerm
-            ).get.isInstanceOf[Data] => {
-          (
-            mem.name.toString.trim(),
-            selfM.reflectField(
-              mem.asTerm
-            ).get.asInstanceOf[Data]
-          )
-        }
-      }.map { case (name, el) =>
-        val target = map(name)
-
-        if (target != null && DataMirror.checkTypeEquivalence(el, target)) {
+      val subMap = sub.elements
+      self.elements.map { case (name, el) =>
+        val target = subMap.get(name)
+        if (
+          target.nonEmpty && DataMirror.checkTypeEquivalence(el, target.get)
+        ) {
           val dir = DataMirror.specifiedDirectionOf(el)
           if (dir == SpecifiedDirection.Input) {
             if (debug) println(
               f"self.$name%-16s >>  sub.$name%-16s"
             )
-            target := el
+            target.get := el
           } else if (dir == SpecifiedDirection.Output) {
             if (debug) println(
               f" sub.$name%-16s << self.$name%-16s"
             )
-            el := target
+            el := target.get
           } else {
             if (debug) println(
               f" sub.$name%-16s <> self.$name%-16s"
             )
-            el <> target
+            el <> target.get
           }
         }
       }
+
     }
   }
 }
