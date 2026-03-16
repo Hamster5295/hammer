@@ -28,14 +28,14 @@ object Sim extends SimulatorAPI {
       firtoolOpts:           Array[String] = Array.empty,
       settings:              Settings[T] = Settings.default[T],
       additionalResetCycles: Int = 0,
-      subdirectory:          Option[String] = None
+      subdirectory:          Option[String] = None,
   )(stimulus: (T) => Unit)(
       implicit
       testingDirectory:             HasTestingDirectory,
       chiselOptsModifications:      ChiselOptionsModifications,
       firtoolOptsModifications:     FirtoolOptionsModifications,
       commonSettingsModifications:  svsim.CommonSettingsModifications,
-      backendSettingsModifications: svsim.BackendSettingsModifications
+      backendSettingsModifications: svsim.BackendSettingsModifications,
   ): Unit = {
     val verilatorSettings = new CompilationSettings(
       traceStyle = Some(
@@ -47,15 +47,15 @@ object Sim extends SimulatorAPI {
           traceUnderscore = true,
           maxArraySize = Some(1024),
           maxWidth = Some(1024),
-          traceDepth = Some(1024)
-        )
+          traceDepth = Some(1024),
+        ),
       ),
       outputSplit = None,
       outputSplitCFuncs = None,
       disabledWarnings = Seq(),
       disableFatalExitOnWarnings = false,
       enableAllAssertions = false,
-      timing = None
+      timing = None,
     )
     implicit val verilator =
       HasSimulator.simulators.verilator(verilatorSettings = verilatorSettings)
@@ -66,7 +66,7 @@ object Sim extends SimulatorAPI {
       firtoolOpts,
       settings,
       additionalResetCycles,
-      subdirectory
+      subdirectory,
     )(stimulus)
   }
 }
@@ -134,7 +134,7 @@ object Test extends PeekPokeAPI {
 object Expect extends PeekPokeAPI {
   def apply[T](
       data:     UInt,
-      expected: BigInt
+      expected: BigInt,
   )(preprocess: BigInt => BigInt)(implicit sourceInfo: SourceInfo): Unit = {
     val observed = preprocess(data.peekValue().asBigInt)
     if (observed != expected)
@@ -142,7 +142,7 @@ object Expect extends PeekPokeAPI {
         observed,
         expected,
         s"Expectation failed: observed value ${observed} != ${expected}",
-        sourceInfo
+        sourceInfo,
       )
   }
 }

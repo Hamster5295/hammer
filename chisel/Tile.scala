@@ -6,7 +6,7 @@ import chisel3.util._
 
 class TileSeq[T](val xLen: Int, val yLen: Int)(gen: (Int, Int) => T) {
   val inner: Seq[Seq[T]] = Seq.tabulate(xLen)(x =>
-    Seq.tabulate(yLen)(y => prefix(s"pos_${x}_$y")(gen(x, y)))
+    Seq.tabulate(yLen)(y => prefix(s"pos_${x}_$y")(gen(x, y))),
   )
 
   def apply(x: Int, y: Int) = inner(x)(y)
@@ -26,7 +26,7 @@ object TileSeq {
 class Tile[T <: Data](xLen: Int, yLen: Int)(gen: => T)
     extends Bundle {
   val bits = VecInit(Seq.tabulate(xLen)(x =>
-    VecInit(Seq.tabulate(yLen)(y => prefix(s"pos_${x}_$y")(gen)))
+    VecInit(Seq.tabulate(yLen)(y => prefix(s"pos_${x}_$y")(gen))),
   ))
 
   def apply(x: Int, y: Int) = bits(x)(y)

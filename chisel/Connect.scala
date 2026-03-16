@@ -11,12 +11,12 @@ object Connect {
       dst:      Data,
       srcToDst: (Data, Data) => Unit = (s, d) => d := s,
       dstToSrc: (Data, Data) => Unit = (s, d) => s := d,
-      flipped:  Boolean = false
+      flipped:  Boolean = false,
   ): Unit = {
     DataMirror.requireTypeEquivalent(
       src,
       dst,
-      s"Unable to connect signal '${src}' -> '${dst}': They're of different types"
+      s"Unable to connect signal '${src}' -> '${dst}': They're of different types",
     )
 
     if (DataMirror.specifiedDirectionOf(dst) == SpecifiedDirection.Output) {
@@ -39,14 +39,14 @@ object Connect {
           dstToSrc,
           flipped ^
             (DataMirror.specifiedDirectionOf(
-              src
-            ) == SpecifiedDirection.Flip)
+              src,
+            ) == SpecifiedDirection.Flip),
         )
       }
     } else {
       require(
         false,
-        s"${RED}Unable to connect signal '$src' -> '$dst': Cannot determine direction$RESET"
+        s"${RED}Unable to connect signal '$src' -> '$dst': Cannot determine direction$RESET",
       )
 
     }

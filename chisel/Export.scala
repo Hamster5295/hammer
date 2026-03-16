@@ -8,7 +8,7 @@ import scala.language.existentials
 
 class ExportedModule(
     gen:  => Module,
-    name: String = "Top"
+    name: String = "Top",
 )(withOutputBuffer: Boolean = true) extends Module {
 
   override def desiredName: String = name
@@ -21,7 +21,7 @@ class ExportedModule(
   val m     = ru.runtimeMirror(getClass.getClassLoader)
   val im    = m.reflect(inner)
   val field = im.reflectField(
-    im.symbol.info.member(ru.TermName("io")).asTerm.accessed.asTerm
+    im.symbol.info.member(ru.TermName("io")).asTerm.accessed.asTerm,
   )
   require(field != null, "Exported Module must have a 'io' field!")
 
@@ -47,14 +47,14 @@ object Export {
       firOpts:          Array[String] = Array(),
       splitVerilog:     Boolean = true,
       withOutputBuffer: Boolean = true,
-      withPathPrefix:   Boolean = true
+      withPathPrefix:   Boolean = true,
   ): Unit = {
 
     var args = Array(
       "--target",
       "systemverilog",
       "--target-dir",
-      (if (withPathPrefix) "build/" else "") + path
+      (if (withPathPrefix) "build/" else "") + path,
     )
 
     if (splitVerilog) args :+= "--split-verilog"
@@ -62,15 +62,15 @@ object Export {
     val firtoolOpts = Array(
       "-disable-all-randomization",
       "-strip-debug-info",
-      "-default-layer-specialization=enable"
+      "-default-layer-specialization=enable",
     ) ++ firOpts
 
     (new ChiselStage).execute(
       args,
       Seq(ChiselGeneratorAnnotation(() =>
-        new ExportedModule(gen, "Top")(withOutputBuffer)
+        new ExportedModule(gen, "Top")(withOutputBuffer),
       )) ++
-        firtoolOpts.map(FirtoolOption(_))
+        firtoolOpts.map(FirtoolOption(_)),
     )
   }
 }
