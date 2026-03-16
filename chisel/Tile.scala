@@ -23,10 +23,10 @@ object TileSeq {
     new TileSeq(xLen, yLen)(gen)
 }
 
-class Tile[T <: Data](xLen: Int, yLen: Int)(gen: (Int, Int) => T)
+class Tile[T <: Data](xLen: Int, yLen: Int)(gen: => T)
     extends Bundle {
   val bits = VecInit(Seq.tabulate(xLen)(x =>
-    VecInit(Seq.tabulate(yLen)(y => prefix(s"pos_${x}_$y")(gen(x, y))))
+    VecInit(Seq.tabulate(yLen)(y => prefix(s"pos_${x}_$y")(gen)))
   ))
 
   def apply(x: Int, y: Int) = bits(x)(y)
@@ -35,6 +35,6 @@ class Tile[T <: Data](xLen: Int, yLen: Int)(gen: (Int, Int) => T)
 }
 
 object Tile {
-  def apply[T <: Data](xLen: Int, yLen: Int)(gen: (Int, Int) => T) =
+  def apply[T <: Data](xLen: Int, yLen: Int)(gen: => T) =
     new Tile(xLen, yLen)(gen)
 }
