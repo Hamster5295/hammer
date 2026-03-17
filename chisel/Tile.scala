@@ -1,6 +1,7 @@
 package hammer
 
 import chisel3._
+import chisel3.experimental.SourceInfo
 import chisel3.experimental.prefix
 import chisel3.util._
 
@@ -23,9 +24,11 @@ object TileSeq {
     new TileSeq(xLen, yLen)(gen)
 }
 
-class Tile[T <: Data](xLen: Int, yLen: Int)(gen: => T)
+class Tile[T <: Data](xLen: Int, yLen: Int)(gen: => T, isType: Boolean)
     extends Bundle {
-  val bits = VecInit(Seq.tabulate(xLen)(x =>
+  val bits = if (isType)
+    Vec(xLen, Vec(yLen, gen))
+  else VecInit(Seq.tabulate(xLen)(x =>
     VecInit(Seq.tabulate(yLen)(y => prefix(s"pos_${x}_$y")(gen))),
   ))
 
@@ -35,6 +38,17 @@ class Tile[T <: Data](xLen: Int, yLen: Int)(gen: => T)
 }
 
 object Tile {
-  def apply[T <: Data](xLen: Int, yLen: Int)(gen: => T) =
-    new Tile(xLen, yLen)(gen)
+  def apply[T <: Data](
+      xLen: Int,
+      yLen: Int,
+  )(gen: => T) =
+    new Tile(xLen, yLen)(gen, true)
+}
+
+object TileInit {
+  def apply[T <: Data](
+      xLen: Int,
+      yLen: Int,
+  )(gen: => T) =
+    new Tile(xLen, yLen)(gen, false)
 }
