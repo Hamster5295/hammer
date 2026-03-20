@@ -120,6 +120,21 @@ package object hammer {
       if (origin.length() >= len) return origin.substring(0, len)
       else return "0" * (len - origin.length()) + origin
     }
+
+    /**
+      * Check whether UInt matches any of the patterns provided
+      * 
+      * Equivalent to (data === pat1) || (data === pat2) || ...
+      *
+      * Example
+      * ```scala
+      * val isLowerThan4 = data.in(0.U, 1.U, 2.U, 3.U)
+      * ```
+      * 
+      * @param patterns The patterns to match
+      * @return
+      */
+    def in(patterns: UInt*): Bool = patterns.map(i => self === i).reduce(_ || _)
   }
 
   implicit class VecExt[T <: Data](self: Vec[T]) {
