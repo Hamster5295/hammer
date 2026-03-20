@@ -198,6 +198,12 @@ package object hammer {
         DataWithIndex(data, idx, idxWidth)
       })
 
+    def elemOp[B, R <: Data](other: Seq[B])(op: (T, B) => R): Vec[R] =
+      if (self.length != other.length) throw new RuntimeException(
+        s"elemOp sources $self (length = ${self.length}) and $other (length = ${other.length}) has different length!",
+      )
+      else VecInit(self.zip(other).map { case (s, o) => op(s, o) })
+
   }
 
   implicit class SeqExt[T <: Data](self: Seq[T]) {
