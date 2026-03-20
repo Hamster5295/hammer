@@ -94,12 +94,12 @@ object TileInit {
       yLen: Int,
       gen:  => T,
   ) =
-    new Tile(xLen, yLen)((_, _) => gen, false)
+    WireInit(new Tile(xLen, yLen)((_, _) => gen, false))
 
   def apply[T <: Data](
       xLen: Int,
       yLen: Int,
       gen:  (Int, Int) => T,
   ) =
-    new Tile(xLen, yLen)(gen, false)
+    WireInit(new Tile(xLen, yLen)(gen, false))
 }
