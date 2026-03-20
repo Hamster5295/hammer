@@ -54,15 +54,13 @@ class Tile[T <: Data](val xLen: Int, val yLen: Int)(
   def x(idx:   Int):         Vec[T] = bits(if (idx >= 0) idx else xLen - idx)
   def y(idx: Int):           Vec[T] =
     VecInit(bits.map(i => i(if (idx >= 0) idx else yLen + idx)))
-  def map[B <: Data](f: (T, Int, Int) => B): Tile[B] =
-    TileInit(xLen, yLen, (x, y) => f(apply(x, y), x, y))
+  def map[B](f: (T, Int, Int) => B): TileSeq[B] =
+    TileSeq(xLen, yLen, (x, y) => f(apply(x, y), x, y))
 
-  def mapX[B <: Data](f: (Vec[T], Int) => B): Vec[B] =
-    VecInit(bits.zipWithIndex.map { case (s, x) => f(s, x) })
-  def mapY[B <: Data](f: (Vec[T], Int) => B): Vec[B] =
-    VecInit(Seq.tabulate(yLen)(y =>
-      f(VecInit(Seq.tabulate(xLen)(x => apply(x, y))), y),
-    ))
+  def mapX[B <: Data](f: (Seq[T], Int) => B): Seq[B] =
+    bits.zipWithIndex.map { case (s, x) => f(s, x) }
+  def mapY[B <: Data](f: (Seq[T], Int) => B): Seq[B] =
+    Seq.tabulate(yLen)(y => f(Seq.tabulate(xLen)(x => apply(x, y)), y))
 
   def zip[B <: Data](other: Tile[B]): TileSeq[(T, B)] = {
     if (other.xLen != xLen || other.yLen != yLen) throw new RuntimeException(
