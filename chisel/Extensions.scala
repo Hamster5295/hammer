@@ -202,7 +202,13 @@ package object hammer {
       if (self.length != other.length) throw new RuntimeException(
         s"elemOp sources $self (length = ${self.length}) and $other (length = ${other.length}) has different length!",
       )
-      else VecInit(self.zip(other).map { case (s, o) => op(s, o) })
+      else {
+        val vec = Wire(Vec(self.length, chiselTypeOf(op(self(0), other(0)))))
+        vec.zipWithIndex.map { case (el, idx) =>
+          el := self.zip(other).map { case (s, o) => op(s, o) }(idx)
+        }
+        return vec
+      }
 
   }
 

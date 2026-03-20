@@ -37,7 +37,6 @@ object TileSeq {
 
   def apply[T](xLen: Int, yLen: Int, gen: => T): TileSeq[T] =
     new TileSeq(xLen, yLen)((_, _) => gen)
-
 }
 
 class Tile[T <: Data](val xLen: Int, val yLen: Int)(
@@ -73,7 +72,10 @@ class Tile[T <: Data](val xLen: Int, val yLen: Int)(
     if (other.xLen != xLen || other.yLen != yLen) throw new RuntimeException(
       s"The size of $this ($xLen, $yLen) and $other (${other.xLen}, ${other.yLen}) is not equal",
     )
-    return TileInit(xLen, yLen, (x, y) => op(apply(x, y), other(x, y)))
+    val tile =
+      Wire(Tile(xLen, yLen, chiselTypeOf(op(apply(0, 0), other(0, 0)))))
+    tile.map((el, x, y) => el := op(apply(x, y), other(x, y)))
+    return tile
   }
 }
 
