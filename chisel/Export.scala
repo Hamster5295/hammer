@@ -33,19 +33,23 @@ class ExportedModule(
 
 object Export {
 
-  /**
+    /**
     * Export a module to SystemVerilog
     *
     * @param gen The module to export
     * @param path The path to save source files. The final path will be `{Project Root}/build/{path}`
     * @param firOpts Firrtl options
-    * @param withOutputBuffer If true, all the outputs will be wrapped with registers, Useful if you're going Synthesis the design for timing reports
+    * @param splitVerilog       If true, exported verilog will be gathered into one single file
+    * @param withWrapper        If true, use a wrapper with name "Top" as the top module
+    * @param withOutputBuffer   If true, all the outputs will be wrapped with registers, Useful if you're going Synthesis the design for timing reports. Only works when `withWrapper` is true
+    * @param withPathPrefix     If true, exported files will be stored into `build/{path}`, otherwise `{path}`
     */
   def apply(
       gen:              => Module,
       path:             String,
       firOpts:          Array[String] = Array(),
       splitVerilog:     Boolean = true,
+      withWrapper:      Boolean = true,
       withOutputBuffer: Boolean = true,
       withPathPrefix:   Boolean = true,
   ): Unit = {
@@ -68,7 +72,7 @@ object Export {
     (new ChiselStage).execute(
       args,
       Seq(ChiselGeneratorAnnotation(() =>
-        new ExportedModule(gen, "Top")(withOutputBuffer),
+        if (withWrapper) new ExportedModule(gen, "Top")(withOutputBuffer) else gen,
       )) ++
         firtoolOpts.map(FirtoolOption(_)),
     )
