@@ -33,7 +33,7 @@ class ExportedModule(
 
 object Export {
 
-    /**
+  /**
     * Export a module to SystemVerilog
     *
     * @param gen The module to export
@@ -72,7 +72,8 @@ object Export {
     (new ChiselStage).execute(
       args,
       Seq(ChiselGeneratorAnnotation(() =>
-        if (withWrapper) new ExportedModule(gen, "Top")(withOutputBuffer) else gen,
+        if (withWrapper) new ExportedModule(gen, "Top")(withOutputBuffer)
+        else gen,
       )) ++
         firtoolOpts.map(FirtoolOption(_)),
     )
