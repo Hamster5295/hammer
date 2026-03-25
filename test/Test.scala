@@ -37,9 +37,9 @@ object Sim extends SimulatorAPI {
       commonSettingsModifications:  svsim.CommonSettingsModifications,
       backendSettingsModifications: svsim.BackendSettingsModifications,
   ): Unit = {
-    val verilatorSettings = new CompilationSettings(
-      traceStyle = Some(
-        CompilationSettings.TraceStyle(
+    val verilatorSettings =
+      CompilationSettings.default.withTraceStyle(
+        Some(CompilationSettings.TraceStyle(
           waveform match {
             case Waveform.Fst => CompilationSettings.TraceKind.Fst(Some(2))
             case _            => CompilationSettings.TraceKind.Vcd
@@ -48,15 +48,8 @@ object Sim extends SimulatorAPI {
           maxArraySize = Some(1024),
           maxWidth = Some(1024),
           traceDepth = Some(1024),
-        ),
-      ),
-      outputSplit = None,
-      outputSplitCFuncs = None,
-      disabledWarnings = Seq(),
-      disableFatalExitOnWarnings = false,
-      enableAllAssertions = false,
-      timing = None,
-    )
+        )),
+      )
     implicit val verilator =
       HasSimulator.simulators.verilator(verilatorSettings = verilatorSettings)
 
