@@ -3,7 +3,7 @@ package hammer.model
 import java.lang
 import scala.util.Random
 
-class Fp(expWidth: Int, manWidth: Int)(sign: Int, exp: Int, man: Int) {
+class Fp(expWidth: Int, manWidth: Int)(val sign: Int, val exp: Int, val man: Int) {
 
   def toFloat: Float =
     lang.Float.intBitsToFloat(
@@ -41,7 +41,7 @@ object Fp {
   /**
     * Generate a Float-Point value with specified format
     * 
-    * If you're looking for standard formats, see `f16`, `b16`, `f8e3`, `f8e4` and `f8e5`
+    * If you're looking for standard formats, see `f16`, `b16`, `e3m4`, `e4m3` and `e5m2`
     *
     * @param expWidth The width of the exponent
     * @param manWidth The width of the mantissa
@@ -76,19 +76,19 @@ object Fp {
     *
     * @return The random value
     */
-  def f8e3: Fp = random(3, 4)
+  def e3m4: Fp = random(3, 4)
 
   /**
     * Generate a Float8 E4M3
     *
     * @return The random value
     */
-  def f8e4: Fp = random(4, 3)
+  def e4m3: Fp = random(4, 3)
 
   /**
     * Generate a Float8 E5M2
     *
     * @return The random value
     */
-  def f8e5: Fp = random(5, 2)
+  def e5m2: Fp = random(5, 2)
 }
