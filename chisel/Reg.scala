@@ -63,12 +63,12 @@ object RegFlush {
   def apply[T <: Data](
       next:   T,
       enable: Bool,
-      flush:  Bool
+      flush:  Bool,
   ): T = {
     val r = RegInit(Zero(next))
     r := MuxIf(
       flush   -> Zero(next),
-      !enable -> r
+      !enable -> r,
     )(next)
     r
   }

@@ -13,7 +13,7 @@ class Fp(expWidth: Int, manWidth: Int)(val sign: Int, val exp: Int, val man: Int
     lang.Float.intBitsToFloat(
       ((sign & 1) << 31)
         | (((exp + 127) & 0xff) << 23)
-        | ((man & (math.pow(2, manWidth).toInt - 1)) << (23 - manWidth))
+        | ((man & (math.pow(2, manWidth).toInt - 1)) << (23 - manWidth)),
     )
 
   def toBigInt: BigInt = {
@@ -24,7 +24,7 @@ class Fp(expWidth: Int, manWidth: Int)(val sign: Int, val exp: Int, val man: Int
         | (((exp + expPow / 2 - 1) & (expPow - 1)) << manWidth)
         | (man & (manPow - 1)))
         .toHexString,
-      16
+      16,
     )
   }
 
@@ -57,7 +57,7 @@ object Fp {
     new Fp(expWidth, manWidth)(
       if (rand.nextBoolean()) 1 else 0,
       rand.nextInt(bias * 2) - bias + 1,
-      rand.nextInt(math.pow(2, manWidth).toInt)
+      rand.nextInt(math.pow(2, manWidth).toInt),
     )
   }
 

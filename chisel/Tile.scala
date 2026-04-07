@@ -7,7 +7,7 @@ import chisel3.util._
 
 class TileSeq[T](val xLen: Int, val yLen: Int)(gen: (Int, Int) => T) {
   val inner: Seq[Seq[T]] = Seq.tabulate(xLen)(x =>
-    Seq.tabulate(yLen)(y => prefix(s"pos_${x}_$y")(gen(x, y)))
+    Seq.tabulate(yLen)(y => prefix(s"pos_${x}_$y")(gen(x, y))),
   )
 
   def apply(x: Int, y: Int) = inner(x)(y)
@@ -25,7 +25,7 @@ class TileSeq[T](val xLen: Int, val yLen: Int)(gen: (Int, Int) => T) {
 
   def zip[B](other: TileSeq[B]): TileSeq[(T, B)] = {
     if (other.xLen != xLen || other.yLen != yLen) throw new RuntimeException(
-      s"The size of $this ($xLen, $yLen) and $other (${other.xLen}, ${other.yLen}) is not equal"
+      s"The size of $this ($xLen, $yLen) and $other (${other.xLen}, ${other.yLen}) is not equal",
     )
     return TileSeq(xLen, yLen, (x, y) => (apply(x, y), other(x, y)))
   }
@@ -41,12 +41,12 @@ object TileSeq {
 
 class Tile[T <: Data](val xLen: Int, val yLen: Int)(
     gen:    (Int, Int) => T,
-    isType: Boolean
+    isType: Boolean,
 ) extends Bundle {
   val bits = if (isType)
     Vec(xLen, Vec(yLen, gen(0, 0)))
   else VecInit(Seq.tabulate(xLen)(x =>
-    VecInit(Seq.tabulate(yLen)(y => prefix(s"pos_${x}_$y")(gen(x, y))))
+    VecInit(Seq.tabulate(yLen)(y => prefix(s"pos_${x}_$y")(gen(x, y)))),
   ))
 
   def apply(x: Int, y: Int): T      = bits(x)(y)
@@ -63,14 +63,14 @@ class Tile[T <: Data](val xLen: Int, val yLen: Int)(
 
   def zip[B <: Data](other: Tile[B]): TileSeq[(T, B)] = {
     if (other.xLen != xLen || other.yLen != yLen) throw new RuntimeException(
-      s"The size of $this ($xLen, $yLen) and $other (${other.xLen}, ${other.yLen}) is not equal"
+      s"The size of $this ($xLen, $yLen) and $other (${other.xLen}, ${other.yLen}) is not equal",
     )
     return TileSeq(xLen, yLen, (x, y) => (apply(x, y), other(x, y)))
   }
 
   def elemOp[B <: Data, R <: Data](other: Tile[B])(op: (T, B) => R): Tile[R] = {
     if (other.xLen != xLen || other.yLen != yLen) throw new RuntimeException(
-      s"The size of $this ($xLen, $yLen) and $other (${other.xLen}, ${other.yLen}) is not equal"
+      s"The size of $this ($xLen, $yLen) and $other (${other.xLen}, ${other.yLen}) is not equal",
     )
     val tile =
       Wire(Tile(xLen, yLen, chiselTypeOf(op(apply(0, 0), other(0, 0)))))
@@ -83,7 +83,7 @@ object Tile {
   def apply[T <: Data](
       xLen: Int,
       yLen: Int,
-      gen:  => T
+      gen:  => T,
   ) =
     new Tile(xLen, yLen)((_, _) => gen, true)
 }
@@ -92,14 +92,14 @@ object TileInit {
   def apply[T <: Data](
       xLen: Int,
       yLen: Int,
-      gen:  => T
+      gen:  => T,
   ) =
     new Tile(xLen, yLen)((_, _) => gen, false)
 
   def apply[T <: Data](
       xLen: Int,
       yLen: Int,
-      gen:  (Int, Int) => T
+      gen:  (Int, Int) => T,
   ) =
     new Tile(xLen, yLen)(gen, false)
 }
