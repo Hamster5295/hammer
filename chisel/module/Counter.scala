@@ -26,7 +26,7 @@ class SaturateCounter(width: Int, init: BigInt) extends Module {
     !io.enable                              -> value,
     ((isMax && io.op) || (isMin && !io.op)) -> value,
     io.op                                   -> (value +% 1.U),
-    !io.op                                  -> (value -% 1.U),
+    !io.op                                  -> (value -% 1.U)
   )(value)
 
   value := next

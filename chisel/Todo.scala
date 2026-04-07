@@ -16,7 +16,7 @@ object TODO {
   def apply(message: String, chiselType: Data = 0.U): Data = {
     val trace = Thread.currentThread().getStackTrace()(2)
     println(
-      s"${YELLOW}TODO unimplemented at ${trace.getFileName()}:${trace.getLineNumber()}: $message$RESET",
+      s"${YELLOW}TODO unimplemented at ${trace.getFileName()}:${trace.getLineNumber()}: $message$RESET"
     )
     Zero(chiselType)
   }

@@ -63,7 +63,7 @@ package object hammer {
     def get(left: Int, right: Int): UInt =
       self(
         if (left < 0) self.getWidth + left else left,
-        if (right < 0) self.getWidth + right else right,
+        if (right < 0) self.getWidth + right else right
       )
 
     /**
@@ -156,7 +156,7 @@ package object hammer {
       require(self.length > 0, s"input length = ${self.length} should > 0")
       require(
         self.length >= end,
-        s"input length = ${self.length} should bigger than end = $end",
+        s"input length = ${self.length} should bigger than end = $end"
       )
 
       val result = Wire(Vec(end - start, chiselTypeOf(self(0))))
@@ -200,7 +200,7 @@ package object hammer {
 
     def elemOp[B, R <: Data](other: Seq[B])(op: (T, B) => R): Vec[R] =
       if (self.length != other.length) throw new RuntimeException(
-        s"elemOp sources $self (length = ${self.length}) and $other (length = ${other.length}) has different length!",
+        s"elemOp sources $self (length = ${self.length}) and $other (length = ${other.length}) has different length!"
       )
       else {
         val vec = Wire(Vec(self.length, chiselTypeOf(op(self(0), other(0)))))
@@ -227,7 +227,7 @@ package object hammer {
       */
     def treeReduce(
         reduceOp: (Int, T, T) => T,
-        layerOp:  (Int, T) => T = (_: Int, x: T) => x,
+        layerOp:  (Int, T) => T = (_: Int, x: T) => x
     ) = {
       require(self.length > 0, "Cannot apply reduction on a seq of size 0")
 
@@ -235,7 +235,7 @@ package object hammer {
           seq:      Seq[T],
           reduceOp: (Int, T, T) => T,
           layerOp:  (Int, T) => T,
-          layer:    Int,
+          layer:    Int
       ): T = {
         val n = seq.length
         n match {
@@ -244,7 +244,7 @@ package object hammer {
           case _ =>
             val m = pow(
               2,
-              floor(log10(n - 1) / log10(2)),
+              floor(log10(n - 1) / log10(2))
             ).toInt // number of nodes in next level, will be a power of 2
             val p = 2 * m - n // number of nodes promoted
 
@@ -276,7 +276,7 @@ package object hammer {
       */
     def treeReduce(
         reduceOp: (Int, Int, T, T) => T,
-        layerOp:  (Int, T) => T,
+        layerOp:  (Int, T) => T
     ) = {
       require(self.length > 0, "Cannot apply reduction on a seq of size 0")
 
@@ -286,7 +286,7 @@ package object hammer {
           seq:      Seq[T],
           reduceOp: (Int, Int, T, T) => T,
           layerOp:  (Int, T) => T,
-          layer:    Int,
+          layer:    Int
       ): T = {
         val n = seq.length
         n match {
@@ -298,7 +298,7 @@ package object hammer {
           case _ =>
             val m = pow(
               2,
-              floor(log10(n - 1) / log10(2)),
+              floor(log10(n - 1) / log10(2))
             ).toInt // number of nodes in next level, will be a power of 2
             val p = 2 * m - n // number of nodes promoted
 
@@ -333,23 +333,21 @@ package object hammer {
       val subMap = sub.elements
       self.elements.map { case (name, el) =>
         val target = subMap.get(name)
-        if (
-          target.nonEmpty && DataMirror.checkTypeEquivalence(el, target.get)
-        ) {
+        if (target.nonEmpty && DataMirror.checkTypeEquivalence(el, target.get)) {
           val dir = DataMirror.specifiedDirectionOf(el)
           if (dir == SpecifiedDirection.Input) {
             if (debug) println(
-              f"self.$name%-16s >>  sub.$name%-16s",
+              f"self.$name%-16s >>  sub.$name%-16s"
             )
             target.get := el
           } else if (dir == SpecifiedDirection.Output) {
             if (debug) println(
-              f" sub.$name%-16s << self.$name%-16s",
+              f" sub.$name%-16s << self.$name%-16s"
             )
             el := target.get
           } else {
             if (debug) println(
-              f" sub.$name%-16s <> self.$name%-16s",
+              f" sub.$name%-16s <> self.$name%-16s"
             )
             el <> target.get
           }
