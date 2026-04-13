@@ -44,7 +44,7 @@ object Sim extends SimulatorAPI {
             case Waveform.Fst => CompilationSettings.TraceKind.Fst(Some(2))
             case _            => CompilationSettings.TraceKind.Vcd
           },
-          traceUnderscore = true,
+          traceUnderscore = false,
           maxArraySize = Some(1024),
           maxWidth = Some(1024),
           traceDepth = Some(1024),
