@@ -35,30 +35,6 @@ object RegNxt {
   }
 }
 
-object RegOut {
-
-  /**
-    * Wraps an IO with output signals applying a Register
-    *
-    * Example:
-    * ```scala
-    * val module = Module(new Adder)
-    * val adderIO = RegOut(module.io)   // Now `adderIO` can be used for input/output
-    * 
-    * // `data` will be delayed for 1 cycle as register is inserted
-    * val data = adderIO.output         
-    * ```
-    * 
-    * @param io The io to apply 
-    * @return The buffered bundle
-    */
-  def apply[T <: Bundle](io: T): T = {
-    val out = Wire(chiselTypeOf(io))
-    Connect(io, out, srcToDst = (s, d) => d := RegNext(s))
-    out
-  }
-}
-
 object RegFlush {
   def apply[T <: Data](
       next:   T,

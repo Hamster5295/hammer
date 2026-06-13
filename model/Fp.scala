@@ -3,7 +3,10 @@ package hammer.model
 import java.lang
 import scala.util.Random
 
-class Fp(expWidth: Int, manWidth: Int)(val sign: Int, val exp: Int, val man: Int) {
+class Fp(
+    expWidth: Int,
+    manWidth: Int,
+)(val sign: Int, val exp: Int, val man: Int) {
 
   def getSign = sign
   def getExp  = exp + math.pow(2, expWidth - 1).toInt - 1

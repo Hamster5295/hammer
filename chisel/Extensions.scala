@@ -186,17 +186,17 @@ package object hammer {
       get(index * size, index * size + size)
 
     /**
-      * Create a Vec of `DataWithIndex` with original Vec
+      * Create a Seq of `DataWithIndex` with original Vec
       * 
       * The `idx` of each element is an UInt Wire of the corresponding index, which is really helpful in constructing a hardware list or map.
       *
       * @param idxWidth The width of the `idx` wire
       * @return 
       */
-    def withIndex(idxWidth: Int): Vec[DataWithIndex[T]] =
-      VecInit(self.zipWithIndex.map { case (data, idx) =>
-        DataWithIndex(data, idx, idxWidth)
-      })
+    def withIndex(idxWidth: Int): Seq[Indexed[T]] =
+      self.zipWithIndex.map { case (data, idx) =>
+        Indexed(data, idx)(idxWidth)
+      }
 
     def elemOp[B, R <: Data](other: Seq[B])(op: (T, B) => R): Vec[R] =
       if (self.length != other.length) throw new RuntimeException(
@@ -333,7 +333,9 @@ package object hammer {
       val subMap = sub.elements
       self.elements.map { case (name, el) =>
         val target = subMap.get(name)
-        if (target.nonEmpty && DataMirror.checkTypeEquivalence(el, target.get)) {
+        if (
+          target.nonEmpty && DataMirror.checkTypeEquivalence(el, target.get)
+        ) {
           val dir = DataMirror.specifiedDirectionOf(el)
           if (dir == SpecifiedDirection.Input) {
             if (debug) println(

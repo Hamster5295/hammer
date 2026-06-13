@@ -1,67 +1,22 @@
 package hammer
 
+import _root_.circt.stage.ChiselStage
+import _root_.circt.stage.FirtoolOption
 import chisel3._
 import chisel3.stage.ChiselGeneratorAnnotation
-import circt.stage.ChiselStage
-import circt.stage.FirtoolOption
-import scala.language.existentials
-
-class ExportedModule(
-    gen:  => Module,
-    name: String = "Top",
-)(withOutputBuffer: Boolean = true) extends Module {
-
-  override def desiredName: String = name
-
-  val inner = Module(gen)
-
-  // Reflect to get 'io' field
-  // Scala why ur reflect is SO COMPLEX?
-  val ru    = scala.reflect.runtime.universe
-  val m     = ru.runtimeMirror(getClass.getClassLoader)
-  val im    = m.reflect(inner)
-  val field = im.reflectField(
-    im.symbol.info.member(ru.TermName("io")).asTerm.accessed.asTerm,
-  )
-  require(field != null, "Exported Module must have a 'io' field!")
-
-  val innerIO    = field.get.asInstanceOf[Bundle]
-  val bufferedIO = if (withOutputBuffer) RegOut(innerIO) else innerIO
-  val io         = IO(chiselTypeOf(innerIO))
-  io <> bufferedIO
-}
+import chisel3.util._
 
 object Export {
-
-  /**
-    * Export a module to SystemVerilog
-    *
-    * @param gen The module to export
-    * @param path The path to save source files. The final path will be `{Project Root}/build/{path}`
-    * @param firOpts Firrtl options
-    * @param splitVerilog       If true, exported verilog will be gathered into one single file
-    * @param withWrapper        If true, use a wrapper with name "Top" as the top module
-    * @param withOutputBuffer   If true, all the outputs will be wrapped with registers, Useful if you're going Synthesis the design for timing reports. Only works when `withWrapper` is true
-    * @param withPathPrefix     If true, exported files will be stored into `build/{path}`, otherwise `{path}`
-    */
   def apply(
-      gen:              => Module,
-      path:             String,
-      firOpts:          Array[String] = Array(),
-      splitVerilog:     Boolean = true,
-      withWrapper:      Boolean = true,
-      withOutputBuffer: Boolean = true,
-      withPathPrefix:   Boolean = true,
-  ): Unit = {
+      gen:     => Module,
+      args:    Array[String],
+      firOpts: Array[String] = Array(),
+  ) = {
 
-    var args = Array(
+    val a = Array(
       "--target",
       "systemverilog",
-      "--target-dir",
-      (if (withPathPrefix) "build/" else "") + path,
-    )
-
-    if (splitVerilog) args :+= "--split-verilog"
+    ) ++ args
 
     val firtoolOpts = Array(
       "-disable-all-randomization",
@@ -69,13 +24,10 @@ object Export {
       "-default-layer-specialization=enable",
     ) ++ firOpts
 
-    val obj = new Object()
-
     (new ChiselStage).execute(
-      args,
+      a,
       Seq(ChiselGeneratorAnnotation(() =>
-        if (withWrapper) new ExportedModule(gen, "Top")(withOutputBuffer)
-        else gen,
+        gen,
       )) ++
         firtoolOpts.map(FirtoolOption(_)),
     )

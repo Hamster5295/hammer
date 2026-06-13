@@ -11,8 +11,8 @@ class TileSeq[T](val xLen: Int, val yLen: Int)(gen: (Int, Int) => T) {
   )
 
   def apply(x: Int, y: Int) = inner(x)(y)
-  def x(idx:   Int) = inner(if (idx >= 0) idx else xLen - idx)
-  def y(idx:   Int) = inner.map(i => i(if (idx >= 0) idx else yLen + idx))
+  def x(idx:   Int)         = inner(if (idx >= 0) idx else xLen - idx)
+  def y(idx: Int) = inner.map(i => i(if (idx >= 0) idx else yLen + idx))
   def map[B](f: (T, Int, Int) => B): TileSeq[B] =
     TileSeq(xLen, yLen, (x, y) => f(apply(x, y), x, y))
   def mapBundle[B <: Data](f: (T, Int, Int) => B): Tile[B] =
