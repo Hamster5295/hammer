@@ -41,7 +41,7 @@ object Sim extends SimulatorAPI {
       CompilationSettings(
         Some(CompilationSettings.TraceStyle(
           waveform match {
-            case Waveform.Fst => CompilationSettings.TraceKind.Fst(Some(2))
+            case Waveform.Fst => CompilationSettings.TraceKind.Fst()
             case _            => CompilationSettings.TraceKind.Vcd
           },
           traceUnderscore = false,
