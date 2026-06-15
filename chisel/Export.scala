@@ -1,7 +1,6 @@
 package hammer
 
-import _root_.circt.stage.ChiselStage
-import _root_.circt.stage.FirtoolOption
+import _root_.circt.stage._
 import chisel3._
 import chisel3.stage.ChiselGeneratorAnnotation
 import chisel3.util._
@@ -13,11 +12,11 @@ object Export {
       firOpts: Array[String] = Array(),
   ) = {
 
-    val a = Array(
+    var realArgs = args
+    if(!realArgs.contains("--target")) realArgs ++= Array(
       "--target",
       "systemverilog",
-    ) ++ args
-
+    )
     val firtoolOpts = Array(
       "-disable-all-randomization",
       "-strip-debug-info",
@@ -25,7 +24,7 @@ object Export {
     ) ++ firOpts
 
     (new ChiselStage).execute(
-      a,
+      realArgs,
       Seq(ChiselGeneratorAnnotation(() =>
         gen,
       )) ++
