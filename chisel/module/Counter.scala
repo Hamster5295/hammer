@@ -22,11 +22,10 @@ class SaturateCounter(width: Int, init: BigInt) extends Module {
   val isMin = value === 0.U(width.W)
 
   val next = MuxIf(
-    io.set                                  -> io.setValue,
-    !io.enable                              -> value,
-    ((isMax && io.op) || (isMin && !io.op)) -> value,
-    io.op                                   -> (value +% 1.U),
-    !io.op                                  -> (value -% 1.U),
+    io.set                                                -> io.setValue,
+    (!io.enable || (isMax && io.op) || (isMin && !io.op)) -> value,
+    io.op                                                 -> (value +% 1.U),
+    !io.op                                                -> (value -% 1.U),
   )(value)
 
   value := next
