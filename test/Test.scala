@@ -38,7 +38,7 @@ object Sim extends SimulatorAPI {
       backendSettingsModifications: svsim.BackendSettingsModifications,
   ): Unit = {
     val verilatorSettings =
-      CompilationSettings(
+      CompilationSettings.default.withTraceStyle(
         Some(CompilationSettings.TraceStyle(
           waveform match {
             case Waveform.Fst => CompilationSettings.TraceKind.Fst()
