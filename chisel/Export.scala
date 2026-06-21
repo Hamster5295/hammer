@@ -21,6 +21,7 @@ object Export {
       "-disable-all-randomization",
       "-strip-debug-info",
       "-default-layer-specialization=enable",
+      "-O=release",
     ) ++ firOpts
 
     (new ChiselStage).execute(
