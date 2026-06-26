@@ -318,44 +318,4 @@ package object hammer {
       recReduce(self, reduceOp, layerOp, 0)
     }
   }
-
-  implicit class BundleExt(self: Bundle) {
-
-    /**
-      * Passthough a bundle to another in a submodule, connecting all signals of same name
-      * 
-      * Really helpful if you are using a Wrapper-Inner pattern
-      *
-      * @param sub The IO in a submodule
-      * @param debug Print all the connections when you think this operator is not functioning normally
-      */
-    def :>>(sub: Bundle)(implicit debug: Boolean = false): Unit = {
-      val subMap = sub.elements
-      self.elements.map { case (name, el) =>
-        val target = subMap.get(name)
-        if (
-          target.nonEmpty && DataMirror.checkTypeEquivalence(el, target.get)
-        ) {
-          val dir = DataMirror.specifiedDirectionOf(el)
-          if (dir == SpecifiedDirection.Input) {
-            if (debug) println(
-              f"self.$name%-16s >>  sub.$name%-16s",
-            )
-            target.get := el
-          } else if (dir == SpecifiedDirection.Output) {
-            if (debug) println(
-              f" sub.$name%-16s << self.$name%-16s",
-            )
-            el := target.get
-          } else {
-            if (debug) println(
-              f" sub.$name%-16s <> self.$name%-16s",
-            )
-            el <> target.get
-          }
-        }
-      }
-
-    }
-  }
 }
