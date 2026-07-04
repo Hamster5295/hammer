@@ -5,7 +5,8 @@ import chisel3.simulator.PeekPokeAPI
 import chisel3.util._
 
 package object test {
-  implicit class DecoupledExt[T <: Data](self: DecoupledIO[T]) extends PeekPokeAPI {
+  implicit class DecoupledExt[T <: Data](self: DecoupledIO[T])
+      extends PeekPokeAPI {
 
     def peekFire() = self.valid.peekBoolean() && self.ready.peekBoolean()
 

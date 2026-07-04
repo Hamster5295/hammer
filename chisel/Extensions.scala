@@ -190,6 +190,8 @@ package object hammer {
       * 
       * The `idx` of each element is an UInt Wire of the corresponding index, which is really helpful in constructing a hardware list or map.
       *
+      * Note that the returned `Indexed[T]` is a new Hardware Type and should not be connected as a sink
+      * 
       * @param idxWidth The width of the `idx` wire
       * @return 
       */
@@ -317,5 +319,7 @@ package object hammer {
 
       recReduce(self, reduceOp, layerOp, 0)
     }
+
+    def asUInt: UInt = self.map(_.asUInt).reduceLeft(_ ## _)
   }
 }

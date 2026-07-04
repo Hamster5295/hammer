@@ -4,23 +4,25 @@ import chisel3._
 import chisel3.util._
 import scala.collection.mutable
 
-class PseudoLruSelectorIO(width: Int) extends Bundle {
+class PseudoLruSelectorIO(size: Int) extends Bundle {
   val hitValid = Input(Bool())
-  val hitIndex = Input(UInt(width.W))
+  val hitIndex = Input(UInt(size.W))
 
   val replaceValid = Input(Bool())
-  val replaceIndex = Output(UInt(width.W))
+  val replaceIndex = Output(UInt(size.W))
 }
 
-class PseudoLruSelector(width: Int) extends Module {
+class PseudoLruSelector(size: Int) extends Module {
   require(
-    isPow2(width),
+    isPow2(size),
     "Currently PseudoLruSelector supports width = 2 ^ n only!",
   )
 
+  val width = log2Ceil(size)
+
   val io = IO(new PseudoLruSelectorIO(width))
 
-  val layer = log2Ceil(width)
+  val layer = log2Ceil(size)
   val nodes =
     Seq.tabulate(layer)(i => RegZero(Vec(Pow2(i), Bool())))
 
@@ -38,21 +40,22 @@ class PseudoLruSelector(width: Int) extends Module {
   for (i <- 1 until layer) {
     pointers(i) = pointers(i - 1) ## nodes(i)(pointers(i - 1))
 
-    replacePath(i).withIndex(width).map(data =>
-      data.bits := data.index === pointers(i - 1),
-    )
+    replacePath(i).zipWithIndex.map { case (data, idx) =>
+      data := idx.U === pointers(i - 1)
+    }
 
-    hitPath(i).withIndex(width).map(data =>
-      data.bits := data.index === io.hitIndex.head(i),
-    )
+    hitPath(i).zipWithIndex.map { case (data, idx) =>
+      data := idx.U === io.hitIndex.head(i)
+    }
   }
 
   for (i <- 0 until layer) {
-    nodes(i).zip(replacePath(i)).zip(hitPath(i)).map { case ((n, w), h) =>
-      n := MuxIf(
-        (h && io.hitValid)   -> !io.hitIndex(width - 1 - i),
-        (w && io.replaceValid) -> !n,
-      )(n)
+    nodes(i).zip(replacePath(i)).zip(hitPath(i)).map {
+      case ((node, replace), hit) =>
+        node := MuxIf(
+          (hit && io.hitValid)         -> !io.hitIndex(width - 1 - i),
+          (replace && io.replaceValid) -> !node,
+        )(node)
     }
   }
 

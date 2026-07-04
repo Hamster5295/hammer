@@ -1,6 +1,7 @@
 package hammer
 
 import chisel3._
+import chisel3.experimental.requireIsHardware
 import chisel3.util._
 import hammer.model.Fixed
 
@@ -35,5 +36,15 @@ class SaturateCounter(width: Int, init: BigInt) extends Module {
 }
 
 object SaturateCounter {
-  def apply(width: Int, init: BigInt) = new SaturateCounter(width, init)
+  def apply(width: Int, init: BigInt): SaturateCounter =
+    new SaturateCounter(width, init)
+
+  def apply(data: UInt, init: BigInt = 0): SaturateCounter = {
+    requireIsHardware(data, "Only Hardware can be wrapped by a counter module!")
+
+    val cnter = Module(SaturateCounter(data.getWidth, init))
+    data := cnter.io.value
+
+    cnter
+  }
 }

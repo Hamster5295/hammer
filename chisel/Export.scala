@@ -13,7 +13,7 @@ object Export {
   ) = {
 
     var realArgs = args
-    if(!realArgs.contains("--target")) realArgs ++= Array(
+    if (!realArgs.contains("--target")) realArgs ++= Array(
       "--target",
       "systemverilog",
     )
