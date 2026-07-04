@@ -83,6 +83,44 @@ package object hammer {
       self(index * size + size - 1, index * size)
 
     /**
+      * Get a span of data from UInt by a lsb position and size
+      * 
+      * This is equal to
+      * ```scala
+      * value(lsb + size - 1, lsb)
+      * ```
+      * 
+      * Example:
+      * ```scala
+      * "011010".U.span(2, 3)   // b110
+      * ```
+      *
+      * @param lsb The lsb of the span
+      * @param size The size of the span
+      * @return
+      */
+    def span(lsb: Int, size: Int): UInt = self(lsb + size - 1, lsb)
+
+    /**
+      * Get a span of data from UInt by a msb position and size
+      * 
+      * This is equal to
+      * ```scala
+      * value(msb, msb - size + 1)
+      * ```
+      * 
+      * Example:
+      * ```scala
+      * "011010".U.span(4, 3)   // b110
+      * ```
+      *
+      * @param msb The msb of the span
+      * @param size The size of the span
+      * @return
+      */
+    def rspan(msb: Int, size: Int): UInt = self(msb, msb - size + 1)
+
+    /**
       * Pad at the lsb of the UInt to specified width
       * 
       * Example
@@ -321,5 +359,7 @@ package object hammer {
     }
 
     def asUInt: UInt = self.map(_.asUInt).reduceLeft(_ ## _)
+
+    def asVec: Vec[T] = VecInit(self)
   }
 }
