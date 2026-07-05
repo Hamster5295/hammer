@@ -6,11 +6,19 @@ import chisel3.stage.ChiselGeneratorAnnotation
 import chisel3.util._
 
 object Export {
+
+  /**
+    * Export a Module to specific target
+    *
+    * @param gen The module to be exported
+    * @param args The args to be passed to `firtool`
+    * @param firOpts The options for `firtool` to adjust its product
+    */
   def apply(
       gen:     => Module,
       args:    Array[String],
       firOpts: Array[String] = Array(),
-  ) = {
+  ): Unit = {
 
     var realArgs = args
     if (!realArgs.contains("--target")) realArgs ++= Array(

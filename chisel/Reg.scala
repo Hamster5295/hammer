@@ -36,6 +36,16 @@ object RegNxt {
 }
 
 object RegFlush {
+  /**
+    * A flushable register
+    * 
+    * Priority: flush > enable
+    *
+    * @param next The next value to be written
+    * @param enable The enable signal that allows data writes
+    * @param flush The flush signal that clears the register
+    * @return
+    */
   def apply[T <: Data](
       next:   T,
       enable: Bool,

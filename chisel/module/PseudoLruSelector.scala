@@ -12,6 +12,19 @@ class PseudoLruSelectorIO(size: Int) extends Bundle {
   val replaceIndex = Output(UInt(size.W))
 }
 
+/**
+  * The Pseudo Least Recently Used resolver
+  * 
+  * This module functions as a pointer to the plru target that should be replaced
+  * 
+  * **Signals**
+  * - `hitValid`: whether a read/write hit happens
+  * - `hitIndex`: the index of the hit element
+  * - `replaceValid`: whether a replace will happen
+  * - `replaceIndex`: the index to be replaced
+  *
+  * @param size The element count of the table
+  */
 class PseudoLruSelector(size: Int) extends Module {
   require(
     isPow2(size),

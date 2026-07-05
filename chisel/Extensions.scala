@@ -1,11 +1,6 @@
 import chisel3._
-import chisel3.experimental.Targetable.TargetableSyntax
-import chisel3.reflect.DataMirror
 import chisel3.util._
 import java.lang.Math._
-import os.Source.WritableSource
-import scala.annotation.elidable
-import scala.reflect.runtime.universe._
 
 package object hammer {
 
@@ -22,10 +17,9 @@ package object hammer {
     /**
       * Get the nth msb of the data
       * 
-      * Example:
-      * ```scala
+      * @example {{{
       * "b10101".U.msb(1)  // Gets the second highest bit 0
-      * ```
+      * }}}
       *
       * @param idx
       * @return
@@ -35,11 +29,10 @@ package object hammer {
     /**
       * Similar to UInt.extract, with negative index support
       * 
-      * Example:
-      * ```scala
+      * @example {{{
       * "b10001".get(-1)    // 1
       * "b10001".get(-2)    // 0
-      * ```
+      * }}}
       * 
       * @param idx The index to get
       * @return The target bit
@@ -50,11 +43,10 @@ package object hammer {
     /**
       * Similar to UInt.extract, with negative index support
       * 
-      * Example:
-      * ```scala
+      * @example {{{
       * "b10001".get(-1, -2)    // b10
       * "b10001".get(-2, -5)    // b0001
-      * ```
+      * }}}
       * 
       * @param left The left border to get (inclusive)
       * @param right The right border to get (inclusive)
@@ -90,10 +82,9 @@ package object hammer {
       * value(lsb + size - 1, lsb)
       * ```
       * 
-      * Example:
-      * ```scala
+      * @example {{{
       * "011010".U.span(2, 3)   // b110
-      * ```
+      * }}}
       *
       * @param lsb The lsb of the span
       * @param size The size of the span
@@ -109,10 +100,9 @@ package object hammer {
       * value(msb, msb - size + 1)
       * ```
       * 
-      * Example:
-      * ```scala
+      * @example {{{
       * "011010".U.span(4, 3)   // b110
-      * ```
+      * }}}
       *
       * @param msb The msb of the span
       * @param size The size of the span
@@ -180,11 +170,10 @@ package object hammer {
     /**
       * Get a subset of Vec
       * 
-      * Example:
-      * ```scala
+      * @example {{{
       * val data = Vec(true.B, true.B, false.B, true.B) // 4 elements
       * data.get(1, 3)      // Gets the 2nd & 3rd elements of the original Vec
-      * ```
+      * }}}
       * 
       * @param start The starting index, inclusive
       * @param end The ending index, exclusive
@@ -358,8 +347,23 @@ package object hammer {
       recReduce(self, reduceOp, layerOp, 0)
     }
 
+    /**
+      * Transform the Seq into UInt by concating all the bits
+      *
+      * @return The concated UInt
+      */
     def asUInt: UInt = self.map(_.asUInt).reduceLeft(_ ## _)
 
+    /**
+      * Transform the Seq into Vec
+      * 
+      * This is equal to
+      * ```scala
+      * VecInit(seq)
+      * ```
+      *
+      * @return The vector
+      */
     def asVec: Vec[T] = VecInit(self)
   }
 }
