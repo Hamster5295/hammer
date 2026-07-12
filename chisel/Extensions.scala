@@ -74,6 +74,22 @@ package object hammer {
     def block(index: Int, size: Int): UInt =
       self(index * size + size - 1, index * size)
 
+    /*
+     * Get a block of data from UInt.
+     * The block is defined by its size.
+     * 
+     * This is equal to
+     * ```scala
+     * value(index * (size + 1) - 1, index * size)
+     * ```
+     * 
+     * @param index
+     * @param size
+     * @return
+     */
+    def block(index: UInt, size: Int): UInt =
+      VecInit(Seq.tabulate(self.getWidth / size)(i => self(i + 1 * size - 1, i * size)))(index)
+
     /**
       * Get a span of data from UInt by a lsb position and size
       * 
