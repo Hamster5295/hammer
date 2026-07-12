@@ -8,9 +8,21 @@ package object test {
   implicit class DecoupledExt[T <: Data](self: DecoupledIO[T])
       extends PeekPokeAPI {
 
+    /**
+      * Peek to see if this `DecoupledIO` is firing
+      *
+      * @return whether this IO is firing data
+      */
     def peekFire() = self.valid.peekBoolean() && self.ready.peekBoolean()
 
-    def send(data: T, clock: Clock, timeout: Int = 256): Unit = {
+   /**
+     * Send a data via DecoupledIO
+     *
+     * @param data The data to be sent
+     * @param clock The device clock
+     * @param timeout The clock cycle timeout
+     */ 
+    def send(data: T, clock: Clock, timeout: Int): Unit = {
       self.valid.poke(true)
       self.bits.poke(data)
 
@@ -27,7 +39,14 @@ package object test {
       self.valid.poke(false)
     }
 
-    def recvOp(op: T => Unit, clock: Clock, timeout: Int = 256) = {
+    /**
+      * Receive a data via Decoupled IO and operate on it
+      *
+      * @param op The operation to be applied
+      * @param clock The device clock
+      * @param timeout The clock cycle timeout
+      */
+    def recv(op: T => Unit, clock: Clock, timeout: Int) = {
       self.ready.poke(true)
 
       var i = 0
@@ -45,13 +64,75 @@ package object test {
       self.ready.poke(false)
     }
 
-    def recv(clock: Clock, timeout: Int = 256): T = {
+    /**
+      * Receive a data via Decoupled IO
+      *
+      * @param clock The device clock
+      * @param timeout The clock cycle timeout
+      * @return The received data
+      */
+    def recv(clock: Clock, timeout: Int): T = {
       var result: T = null.asInstanceOf[T]
-      recvOp(t => result = t, clock, timeout)
+      recv(t => result = t, clock, timeout)
       result
     }
 
-    def recvExpect(expected: T, clock: Clock, timeout: Int = 256): Unit =
-      recvOp(t => t.expect(expected), clock, timeout)
+    /**
+      * Receive a data and expect its value
+      *
+      * @param expected The expected value
+      * @param clock The device clock
+      * @param timeout The clock cycle timeout
+      */
+    def recvExpect(expected: T, clock: Clock, timeout: Int): Unit =
+      recv(t => t.expect(expected), clock, timeout)
+  }
+
+  implicit class DecoupledTaskExt[T <: Data](self: DecoupledIO[T])
+      extends PeekPokeAPI {
+
+    /**
+      * Create a data sending task
+      *
+      * @param data The data to be sent
+      * @return The task, can be directly used with `Clocking`
+      */
+    def send(data: T): ClockingTask = new ClockingTask {
+      override def executePreClock(cycle: Int): Unit = {
+        self.valid.poke(true)
+        self.bits.poke(data)
+      }
+
+      def executePostClock(cycle: Int): ClockingState.Value =
+        if (self.peekFire()) {
+          self.valid.poke(false)
+          ClockingState.Done
+        } else ClockingState.Continue
+    }
+
+    /**
+      * Create a data sending task that sends a Seq of data sequencially
+      *
+      * @param data the data to be sent
+      * @return the `ClockingTask`
+      */
+    def send(data: Seq[T]): ClockingTask = new ClockingTask {
+      var queue = data
+
+      override def executePreClock(cycle: Int): Unit = {
+        self.valid.poke(true)
+        self.bits.poke(queue.head)
+      }
+
+      def executePostClock(cycle: Int): ClockingState.Value =
+        if (self.peekFire()) {
+          self.valid.poke(false)
+          queue = queue.drop(1)
+
+          if (queue.length == 0) ClockingState.Done
+          else ClockingState.Continue
+
+        } else ClockingState.Continue
+    }
   }
 }
