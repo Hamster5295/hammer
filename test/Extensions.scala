@@ -15,13 +15,13 @@ package object test {
       */
     def peekFire() = self.valid.peekBoolean() && self.ready.peekBoolean()
 
-   /**
+    /**
      * Send a data via DecoupledIO
      *
      * @param data The data to be sent
      * @param clock The device clock
      * @param timeout The clock cycle timeout
-     */ 
+     */
     def send(data: T, clock: Clock, timeout: Int): Unit = {
       self.valid.poke(true)
       self.bits.poke(data)
@@ -113,11 +113,11 @@ package object test {
     /**
       * Create a data sending task that sends a Seq of data sequencially
       *
-      * @param data the data to be sent
+      * @param datas the data to be sent
       * @return the `ClockingTask`
       */
-    def send(data: Seq[T]): ClockingTask = new ClockingTask {
-      var queue = data
+    def send(datas: Seq[T]): ClockingTask = new ClockingTask {
+      var queue = datas
 
       override def executePreClock(cycle: Int): Unit = {
         self.valid.poke(true)
@@ -133,6 +133,84 @@ package object test {
           else ClockingState.Continue
 
         } else ClockingState.Continue
+    }
+
+    /**
+      * Create a data receiving task that receives a single fired data
+      *
+      * @param op The operation to be applied on the received data
+      * @return The clocking task
+      */
+    def recv(op: T => Unit): ClockingTask = new ClockingTask {
+
+      override def executePreClock(cycle: Int): Unit =
+        self.ready.poke(true)
+
+      override def executePostClock(cycle: Int): ClockingState.Value =
+        if (self.peekFire()) {
+          self.ready.poke(false)
+          op(self.bits.peek())
+          ClockingState.Done
+        } else ClockingState.Continue
+
+    }
+
+    /**
+      * Create a data receiving task that expects a value
+      *
+      * @param expected The expected data
+      * @return The clocking task
+      */
+    def recv(expected: T): ClockingTask = recv(_.expect(expected))
+
+    /**
+      * Create a data receiving task that expects a seq of value
+      *
+      * @param datas The expected datas in order
+      * @return The clocking task
+      */
+    def recv(datas: Seq[T]): ClockingTask = new ClockingTask {
+
+      var queue = datas
+
+      override def executePreClock(cycle: Int): Unit =
+        self.ready.poke(true)
+
+      override def executePostClock(cycle: Int): ClockingState.Value =
+        if (self.peekFire()) {
+          self.ready.poke(false)
+          self.bits.expect(queue.head)
+          queue = queue.drop(1)
+
+          if (queue.length == 0) ClockingState.Done
+          else ClockingState.Continue
+        } else ClockingState.Continue
+
+    }
+
+    /**
+      * Create a data receiving task that receives specific number of value
+      *
+      * @param op The operation to be applied on each received element (id, element)
+      * @return The clocking task
+      */
+    def recv(op: (Int, T) => Unit, count: Int): ClockingTask = new ClockingTask {
+
+      var index = 0
+
+      override def executePreClock(cycle: Int): Unit =
+        self.ready.poke(true)
+
+      override def executePostClock(cycle: Int): ClockingState.Value =
+        if (self.peekFire()) {
+          self.ready.poke(false)
+          op(index, self.bits)
+          index += 1
+
+          if (index >= count) ClockingState.Done
+          else ClockingState.Continue
+        } else ClockingState.Continue
+
     }
   }
 }
