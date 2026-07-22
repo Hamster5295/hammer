@@ -1,6 +1,7 @@
 package hammer
 
 import chisel3._
+import chisel3.util._
 
 object Zero {
 
@@ -35,4 +36,15 @@ object WireZero {
     * @return The wire
     */
   def apply[T <: Data](t: T): T = WireInit(Zero(t))
+}
+
+object Ones {
+
+  /**
+    * Tie any chisel typed Data up to **one**
+    * 
+    * @param data The data type to be tied up. We don't care about its value here.
+    * @return The ones corresponding to the given type
+    */
+  def apply[T <: Data](t: T): T = Fill(t.asUInt.getWidth, 1.U).asTypeOf(t)
 }
