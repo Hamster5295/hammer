@@ -5,15 +5,30 @@ import chisel3.simulator.PeekPokeAPI
 import chisel3.util._
 
 object ClockingState extends Enumeration {
-  val Continue, Done, Break = Value
+  val Continue, Done, Break, Ignore = Value
 }
 
 abstract class ClockingTask {
-  def executePreClock(cycle:  Int): Unit = {}
-  def executePostClock(cycle: Int): ClockingState.Value
+
+  private var actions: Seq[() => Unit] = Seq()
+
+  /**
+    * Delay some task after the rising edge of the clock
+    *
+    * @param action The action to be taken after the clock
+    */
+  def afterClock(action: () => Unit) = actions = actions.appended(action)
+
+  private[hammer] def runAfterClock = {
+    actions.map(_())
+    actions = Seq()
+  }
+
+//   def executePreClock(cycle:  Int): Unit = {}
+  def execute(cycle: Int): ClockingState.Value
 }
 
-class Clocking(clock: Clock, timeout: Int = 1048576) extends PeekPokeAPI {
+class Clocking(clock: Clock, timeout: Int = 4096) extends PeekPokeAPI {
   var tasks = Seq[ClockingTask]()
 
   /**
@@ -48,15 +63,18 @@ class Clocking(clock: Clock, timeout: Int = 1048576) extends PeekPokeAPI {
     * - `Continue`: this task will continue next loop
     * - `Done`: this task has finished, and will not be executed in the loop anymore
     * - `Break`: this task breaks the loop, causing the `Clocking` to stop immediately
+    * - `Ignore`: this task will continue, but it will be counted as a `Done` task that allows simulation to end
     * 
     * A `Clocking` will stop running once all the tasks are done, or the timeout 
     * limit is reached
+    * 
+    * See `DecoupledTaskExt` in test/Extensions.scala for examples
     *
     * @param task a function that will run in the clocking loop
     * @return the `Clocking` instance for chaining
     */
   def fork(task: Int => ClockingState.Value): Clocking = fork(new ClockingTask {
-    override def executePostClock(cycle: Int): ClockingState.Value = task(cycle)
+    override def execute(cycle: Int): ClockingState.Value = task(cycle)
   })
 
   /**
@@ -88,6 +106,8 @@ class Clocking(clock: Clock, timeout: Int = 1048576) extends PeekPokeAPI {
     * 
     * A `Clocking` will stop running once all the tasks are done, or the timeout 
     * limit is reached
+    * 
+    * See `DecoupledTaskExt` in test/Extensions.scala for examples
     *
     * @param task a function that will run in the clocking loop
     * @return the `Clocking` instance for chaining
@@ -110,26 +130,28 @@ class Clocking(clock: Clock, timeout: Int = 1048576) extends PeekPokeAPI {
     var cycle = 0
     for (_ <- 0.until(timeout, step)) {
 
-      // Pre Clock
-      tasks.map(_.executePreClock(cycle))
+      // Execute
+      val results = tasks.map(t => (t, t.execute(cycle)))
 
       // Clock
       clock.step()
       cycle += 1
 
-      // Post Clock
-      val results = tasks.map(t => (t, t.executePostClock(cycle)))
+      tasks.map(_.runAfterClock)
 
       // Break when any task returns ClockingState.Break
       if (results.map(_._2 == ClockingState.Break).reduce(_ || _)) {
         return
       }
 
-      // Filter out all the `ClockingState.Continue` tasks
-      tasks = results.filter(_._2 == ClockingState.Continue).map(_._1)
+      // Filter all the `Continue` & `Ignore` tasks
+      tasks =
+        results.filter(r => r._2 == ClockingState.Continue || r._2 == ClockingState.Ignore).map(
+          _._1,
+        )
 
-      // Stops when tasks are all done
-      if (tasks.length == 0) {
+      // Stops when tasks are all done (ignoring the `Ignore` tasks)
+      if (results.filter(_._2 == ClockingState.Continue).length == 0) {
         return
       }
     }

@@ -129,7 +129,7 @@ object Expect extends PeekPokeAPI {
       data:     UInt,
       expected: BigInt,
   )(preprocess: BigInt => BigInt)(implicit sourceInfo: SourceInfo): Unit = {
-    val observed = preprocess(data.peekValue().asBigInt)
+    val observed = preprocess(data.peek().litValue)
     if (observed != expected)
       throw FailedExpectationException(
         observed,

@@ -1,6 +1,7 @@
 package hammer
 
 import chisel3._
+import chisel3.simulator.ExpectationValueFormat
 import chisel3.simulator.PeekPokeAPI
 import chisel3.util._
 
@@ -85,7 +86,7 @@ package object test {
       * @param timeout The clock cycle timeout
       */
     def recvExpect(expected: T, clock: Clock, timeout: Int): Unit =
-      recv(t => t.expect(expected), clock, timeout)
+      recv(t => t.expect(expected, ExpectationValueFormat.Hex), clock, timeout)
   }
 
   implicit class DecoupledTaskExt[T <: Data](self: DecoupledIO[T])
@@ -98,16 +99,26 @@ package object test {
       * @return The task, can be directly used with `Clocking`
       */
     def send(data: T): ClockingTask = new ClockingTask {
-      override def executePreClock(cycle: Int): Unit = {
+      //   override def executePreClock(cycle: Int): Unit = {
+      //     self.valid.poke(true)
+      //     self.bits.poke(data)
+      //   }
+
+      //   def executePostClock(cycle: Int): ClockingState.Value =
+      //     if (self.peekFire()) {
+      //       self.valid.poke(false)
+      //       ClockingState.Done
+      //     } else ClockingState.Continue
+
+      def execute(cycle: Int): ClockingState.Value = {
         self.valid.poke(true)
         self.bits.poke(data)
-      }
 
-      def executePostClock(cycle: Int): ClockingState.Value =
         if (self.peekFire()) {
-          self.valid.poke(false)
+          afterClock(() => self.valid.poke(false))
           ClockingState.Done
         } else ClockingState.Continue
+      }
     }
 
     /**
@@ -119,12 +130,10 @@ package object test {
     def send(datas: Seq[T]): ClockingTask = new ClockingTask {
       var queue = datas
 
-      override def executePreClock(cycle: Int): Unit = {
+      def execute(cycle: Int): ClockingState.Value = {
         self.valid.poke(true)
         self.bits.poke(queue.head)
-      }
 
-      def executePostClock(cycle: Int): ClockingState.Value =
         if (self.peekFire()) {
           self.valid.poke(false)
           queue = queue.drop(1)
@@ -133,6 +142,7 @@ package object test {
           else ClockingState.Continue
 
         } else ClockingState.Continue
+      }
     }
 
     /**
@@ -143,15 +153,16 @@ package object test {
       */
     def recv(op: T => Unit): ClockingTask = new ClockingTask {
 
-      override def executePreClock(cycle: Int): Unit =
+      override def execute(cycle: Int): ClockingState.Value = {
         self.ready.poke(true)
-
-      override def executePostClock(cycle: Int): ClockingState.Value =
         if (self.peekFire()) {
-          self.ready.poke(false)
           op(self.bits.peek())
+
+          afterClock(() => self.ready.poke(false))
+
           ClockingState.Done
         } else ClockingState.Continue
+      }
 
     }
 
@@ -161,7 +172,7 @@ package object test {
       * @param expected The expected data
       * @return The clocking task
       */
-    def recv(expected: T): ClockingTask = recv(_.expect(expected))
+    def recv(expected: T): ClockingTask = recv(_.expect(expected, ExpectationValueFormat.Hex))
 
     /**
       * Create a data receiving task that expects a seq of value
@@ -173,18 +184,19 @@ package object test {
 
       var queue = datas
 
-      override def executePreClock(cycle: Int): Unit =
+      override def execute(cycle: Int): ClockingState.Value = {
         self.ready.poke(true)
 
-      override def executePostClock(cycle: Int): ClockingState.Value =
         if (self.peekFire()) {
-          self.ready.poke(false)
-          self.bits.expect(queue.head)
+          self.bits.expect(queue.head, ExpectationValueFormat.Hex)
           queue = queue.drop(1)
+
+          afterClock(() => self.ready.poke(false))
 
           if (queue.length == 0) ClockingState.Done
           else ClockingState.Continue
         } else ClockingState.Continue
+      }
 
     }
 
@@ -198,18 +210,19 @@ package object test {
 
       var index = 0
 
-      override def executePreClock(cycle: Int): Unit =
+      override def execute(cycle: Int): ClockingState.Value = {
         self.ready.poke(true)
 
-      override def executePostClock(cycle: Int): ClockingState.Value =
         if (self.peekFire()) {
-          self.ready.poke(false)
           op(index, self.bits)
           index += 1
+
+          afterClock(() => self.ready.poke(false))
 
           if (index >= count) ClockingState.Done
           else ClockingState.Continue
         } else ClockingState.Continue
+      }
 
     }
   }
