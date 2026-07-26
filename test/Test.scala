@@ -1,7 +1,6 @@
 package hammer.test
 
 import chisel3._
-import chisel3.experimental.SourceInfo
 import chisel3.simulator._
 import chisel3.testing.HasTestingDirectory
 import io.AnsiColor._
@@ -124,18 +123,3 @@ object Test extends PeekPokeAPI {
   }
 }
 
-object Expect extends PeekPokeAPI {
-  def apply[T](
-      data:     UInt,
-      expected: BigInt,
-  )(preprocess: BigInt => BigInt)(implicit sourceInfo: SourceInfo): Unit = {
-    val observed = preprocess(data.peek().litValue)
-    if (observed != expected)
-      throw FailedExpectationException(
-        observed,
-        expected,
-        s"Expectation failed: observed value ${observed} != ${expected}",
-        sourceInfo,
-      )
-  }
-}
