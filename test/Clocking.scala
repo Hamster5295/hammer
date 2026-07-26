@@ -24,8 +24,8 @@ abstract class ClockingTask {
     actions = Seq()
   }
 
-//   def executePreClock(cycle:  Int): Unit = {}
-  def execute(cycle: Int): ClockingState.Value
+  def prestep(cycle: Int): Unit = {}
+  def step(cycle:    Int): ClockingState.Value
 }
 
 class Clocking(clock: Clock, timeout: Int = 4096) extends PeekPokeAPI {
@@ -74,7 +74,7 @@ class Clocking(clock: Clock, timeout: Int = 4096) extends PeekPokeAPI {
     * @return the `Clocking` instance for chaining
     */
   def fork(task: Int => ClockingState.Value): Clocking = fork(new ClockingTask {
-    override def execute(cycle: Int): ClockingState.Value = task(cycle)
+    override def step(cycle: Int): ClockingState.Value = task(cycle)
   })
 
   /**
@@ -131,7 +131,8 @@ class Clocking(clock: Clock, timeout: Int = 4096) extends PeekPokeAPI {
     for (_ <- 0.until(timeout, step)) {
 
       // Execute
-      val results = tasks.map(t => (t, t.execute(cycle)))
+      tasks.map(_.prestep(cycle))
+      val results = tasks.map(t => (t, t.step(cycle)))
 
       // Clock
       clock.step()
@@ -182,5 +183,5 @@ object Clocking {
       * @param timeout The timeout cycle. A negative value will remove the timeout limit
       * @return A `Clocking` instance to be `fork`ed with tasks, then `run`
       */
-  def apply(clock: Clock, timeout: Int = 1048576) = new Clocking(clock, timeout)
+  def apply(clock: Clock, timeout: Int = 4096) = new Clocking(clock, timeout)
 }

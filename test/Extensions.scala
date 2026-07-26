@@ -99,26 +99,18 @@ package object test {
       * @return The task, can be directly used with `Clocking`
       */
     def send(data: T): ClockingTask = new ClockingTask {
-      //   override def executePreClock(cycle: Int): Unit = {
-      //     self.valid.poke(true)
-      //     self.bits.poke(data)
-      //   }
 
-      //   def executePostClock(cycle: Int): ClockingState.Value =
-      //     if (self.peekFire()) {
-      //       self.valid.poke(false)
-      //       ClockingState.Done
-      //     } else ClockingState.Continue
-
-      def execute(cycle: Int): ClockingState.Value = {
+      override def prestep(cycle: Int): Unit = {
         self.valid.poke(true)
         self.bits.poke(data)
+      }
+
+      def step(cycle: Int): ClockingState.Value =
 
         if (self.peekFire()) {
           afterClock(() => self.valid.poke(false))
           ClockingState.Done
         } else ClockingState.Continue
-      }
     }
 
     /**
@@ -130,19 +122,21 @@ package object test {
     def send(datas: Seq[T]): ClockingTask = new ClockingTask {
       var queue = datas
 
-      def execute(cycle: Int): ClockingState.Value = {
+      override def prestep(cycle: Int): Unit = {
         self.valid.poke(true)
         self.bits.poke(queue.head)
+      }
+
+      def step(cycle: Int): ClockingState.Value =
 
         if (self.peekFire()) {
-          self.valid.poke(false)
+          afterClock(() => self.valid.poke(false))
           queue = queue.drop(1)
 
           if (queue.length == 0) ClockingState.Done
           else ClockingState.Continue
 
         } else ClockingState.Continue
-      }
     }
 
     /**
@@ -153,8 +147,9 @@ package object test {
       */
     def recv(op: T => Unit): ClockingTask = new ClockingTask {
 
-      override def execute(cycle: Int): ClockingState.Value = {
-        self.ready.poke(true)
+      override def prestep(cycle: Int): Unit = self.ready.poke(true)
+
+      override def step(cycle: Int): ClockingState.Value =
         if (self.peekFire()) {
           op(self.bits.peek())
 
@@ -162,7 +157,6 @@ package object test {
 
           ClockingState.Done
         } else ClockingState.Continue
-      }
 
     }
 
@@ -184,8 +178,9 @@ package object test {
 
       var queue = datas
 
-      override def execute(cycle: Int): ClockingState.Value = {
-        self.ready.poke(true)
+      override def prestep(cycle: Int): Unit = self.ready.poke(true)
+
+      override def step(cycle: Int): ClockingState.Value =
 
         if (self.peekFire()) {
           self.bits.expect(queue.head, ExpectationValueFormat.Hex)
@@ -196,7 +191,6 @@ package object test {
           if (queue.length == 0) ClockingState.Done
           else ClockingState.Continue
         } else ClockingState.Continue
-      }
 
     }
 
@@ -210,9 +204,10 @@ package object test {
 
       var index = 0
 
-      override def execute(cycle: Int): ClockingState.Value = {
+      override def prestep(cycle: Int): Unit =
         self.ready.poke(true)
 
+      override def step(cycle: Int): ClockingState.Value =
         if (self.peekFire()) {
           op(index, self.bits)
           index += 1
@@ -222,7 +217,6 @@ package object test {
           if (index >= count) ClockingState.Done
           else ClockingState.Continue
         } else ClockingState.Continue
-      }
 
     }
   }

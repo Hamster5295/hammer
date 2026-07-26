@@ -88,7 +88,7 @@ package object hammer {
      * @return
      */
     def block(index: UInt, size: Int): UInt =
-      VecInit(Seq.tabulate(self.getWidth / size)(i => self(i + 1 * size - 1, i * size)))(index)
+      VecInit(Seq.tabulate(self.getWidth / size)(i => self((i + 1) * size - 1, i * size)))(index)
 
     /**
       * Get a span of data from UInt by a lsb position and size
@@ -179,6 +179,14 @@ package object hammer {
       * @return
       */
     def in(patterns: UInt*): Bool = patterns.map(i => self === i).reduce(_ || _)
+
+    /**
+      * Align current UInt, tying end X bits down to zero
+      *
+      * @param endBits The end X bits to be tied
+      * @return The aligned UInt
+      */
+    def align(endBits: Int): UInt = self.get(-1, endBits) ## 0.U(endBits.W)
   }
 
   implicit class VecExt[T <: Data](self: Vec[T]) {
