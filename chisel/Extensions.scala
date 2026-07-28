@@ -376,7 +376,7 @@ package object hammer {
       *
       * @return The concated UInt
       */
-    def asUInt: UInt = self.map(_.asUInt).reduceLeft(_ ## _)
+    def asUInt: UInt = self.asVec.asUInt
 
     /**
       * Transform the Seq into Vec
