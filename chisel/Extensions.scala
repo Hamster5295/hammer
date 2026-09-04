@@ -196,9 +196,8 @@ package object hammer {
       */
     def width(width: Int): UInt = {
         val wire = WireZero(UInt(width.W))
-        
         if(self.isWidthKnown) {
-            if(self.getWidth < width) wire := self.pad(width)
+            if(self.getWidth < width) wire := self
             else wire := self.end(width)
         }else {
             wire := self
