@@ -187,6 +187,25 @@ package object hammer {
       * @return The aligned UInt
       */
     def align(endBits: Int): UInt = self.get(-1, endBits) ## 0.U(endBits.W)
+
+    /**
+      * Fix an UInt into specific width
+      *
+      * @param width The width specified
+      * @return A wired UInt with fixed width
+      */
+    def width(width: Int): UInt = {
+        val wire = WireZero(UInt(width.W))
+        
+        if(self.isWidthKnown) {
+            if(self.getWidth < width) wire := self.pad(width)
+            else wire := self.end(width)
+        }else {
+            wire := self
+        }
+
+        wire
+    }
   }
 
   implicit class VecExt[T <: Data](self: Vec[T]) {
