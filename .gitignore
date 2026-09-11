@@ -356,3 +356,6 @@ report/
 
 # vivado
 vivado/
+
+# env
+.env
