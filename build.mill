@@ -1,0 +1,72 @@
+//| mill-version: 1.1.8
+package build
+
+import mill._
+import mill.api.Task.Simple
+import mill.javalib.publish._
+import mill.javalib.publish.PomSettings
+import mill.scalalib._
+import mill.scalalib.scalafmt.ScalafmtModule
+import mill.util.VcsVersionModule
+
+// Note: This project requires .mill-jvm-opts file containing:
+//   -Dchisel.project.root=${PWD}
+// This is needed because Chisel needs to know the project root directory
+// to properly generate and handle test directories and output files.
+// See: https://github.com/com-lihaoyi/mill/issues/3840
+
+object hammer extends SbtModule with ScalafmtModule with PublishModule
+    with VcsVersionModule { m =>
+  override def scalaVersion = "2.13.18"
+  def chiselVersion         = "7.15.0"
+
+  def moduleDir              = super.moduleDir / os.up
+  override def scalacOptions = Seq(
+    "-language:reflectiveCalls",
+    "-deprecation",
+    "-feature",
+    "-Xcheckinit",
+    "-Ymacro-annotations",
+  )
+
+  override def repositories: Simple[Seq[String]] = Seq(
+    "https://maven.aliyun.com/repository/central",
+    "https://repo1.maven.org/maven2",
+  )
+
+  override def mvnDeps = Seq(
+    mvn"org.chipsalliance::chisel:$chiselVersion",
+  )
+
+  override def scalacPluginMvnDeps = Seq(
+    mvn"org.chipsalliance:::chisel-plugin:$chiselVersion",
+  )
+
+  /// Publish
+  def pomSettings: Simple[PomSettings] = PomSettings(
+    description = "Chisel RTL Utilities for better QoL",
+    organization = "io.github.hamster5295",
+    url = "https://codeberg.org/hamster5295/hammer",
+    licenses = Seq(License.MIT),
+    versionControl = VersionControl(
+      browsableRepository = Some(s"https://codeberg.org/hamster5295/hammer"),
+      connection = Some(VersionControlConnection.gitHttps(
+        "codeberg.org",
+        "hamster5295/hammer",
+      )),
+      developerConnection = Some(VersionControlConnection.gitSsh(
+        "codeberg.org",
+        "hamster5295/hammer.git",
+        username = Some("git"),
+      )),
+      tag = None,
+    ),
+    developers = Seq(Developer(id = "Hamster5295", name = "Hamster5295")),
+  )
+
+  object test extends SbtTests with TestModule.ScalaTest {
+    override def mvnDeps = Seq(
+      mvn"org.scalatest::scalatest::3.2.19",
+    )
+  }
+}

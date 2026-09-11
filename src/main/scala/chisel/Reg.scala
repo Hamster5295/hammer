@@ -36,6 +36,7 @@ object RegNxt {
 }
 
 object RegFlush {
+
   /**
     * A flushable register
     * 

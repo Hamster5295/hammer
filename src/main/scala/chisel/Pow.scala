@@ -1,6 +1,7 @@
 package hammer
 
 object Pow2 {
+
   /**
     * Similar to math.pow(2, i), but is designed for Int calculations
     *

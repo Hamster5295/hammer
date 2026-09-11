@@ -45,8 +45,8 @@ object Fixed {
     * @param byteMask
     * @return
     */
-  def byte2bitMask(byteMask: BigInt): BigInt = (for (i <- 0 until byteMask.bitLength)
-    yield
-      (if (((byteMask >> i) & 1) == 1) 0xff else 0x00) << (8 * i))
-    .reduce(_ | _)
+  def byte2bitMask(byteMask: BigInt): BigInt =
+    (for (i <- 0 until byteMask.bitLength)
+      yield (if (((byteMask >> i) & 1) == 1) 0xff else 0x00) << (8 * i))
+      .reduce(_ | _)
 }

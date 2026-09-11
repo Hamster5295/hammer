@@ -122,4 +122,3 @@ object Test extends PeekPokeAPI {
     }
   }
 }
-

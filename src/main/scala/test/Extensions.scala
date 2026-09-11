@@ -166,7 +166,8 @@ package object test {
       * @param expected The expected data
       * @return The clocking task
       */
-    def recv(expected: T): ClockingTask = recv(_.expect(expected, ExpectationValueFormat.Hex))
+    def recv(expected: T): ClockingTask =
+      recv(_.expect(expected, ExpectationValueFormat.Hex))
 
     /**
       * Create a data receiving task that expects a seq of value
@@ -200,24 +201,25 @@ package object test {
       * @param op The operation to be applied on each received element (id, element)
       * @return The clocking task
       */
-    def recv(op: (Int, T) => Unit, count: Int): ClockingTask = new ClockingTask {
+    def recv(op: (Int, T) => Unit, count: Int): ClockingTask =
+      new ClockingTask {
 
-      var index = 0
+        var index = 0
 
-      override def prestep(cycle: Int): Unit =
-        self.ready.poke(true)
+        override def prestep(cycle: Int): Unit =
+          self.ready.poke(true)
 
-      override def step(cycle: Int): ClockingState.Value =
-        if (self.peekFire()) {
-          op(index, self.bits)
-          index += 1
+        override def step(cycle: Int): ClockingState.Value =
+          if (self.peekFire()) {
+            op(index, self.bits)
+            index += 1
 
-          afterClock(() => self.ready.poke(false))
+            afterClock(() => self.ready.poke(false))
 
-          if (index >= count) ClockingState.Done
-          else ClockingState.Continue
-        } else ClockingState.Continue
+            if (index >= count) ClockingState.Done
+            else ClockingState.Continue
+          } else ClockingState.Continue
 
-    }
+      }
   }
 }

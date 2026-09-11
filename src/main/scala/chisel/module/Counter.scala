@@ -51,6 +51,7 @@ class SaturateCounter(width: Int, init: BigInt) extends Module {
 }
 
 object SaturateCounter {
+
   /**
     * Create a Saturate Counter with specified data width and initial value
     *

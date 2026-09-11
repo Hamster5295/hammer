@@ -6,7 +6,9 @@ import chisel3.simulator.FailedExpectationException
 object Fail {
   def apply(msg: String) = throw new RuntimeException(msg)
 
-  def apply(observed: BigInt, expected: BigInt, msg: String)(implicit sourceInfo: SourceInfo) =
+  def apply(observed: BigInt, expected: BigInt, msg: String)(implicit
+      sourceInfo: SourceInfo,
+  ) =
     throw FailedExpectationException(
       observed,
       expected,

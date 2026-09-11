@@ -147,7 +147,9 @@ class Clocking(clock: Clock, timeout: Int = 4096) extends PeekPokeAPI {
 
       // Filter all the `Continue` & `Ignore` tasks
       tasks =
-        results.filter(r => r._2 == ClockingState.Continue || r._2 == ClockingState.Ignore).map(
+        results.filter(r =>
+          r._2 == ClockingState.Continue || r._2 == ClockingState.Ignore,
+        ).map(
           _._1,
         )
 

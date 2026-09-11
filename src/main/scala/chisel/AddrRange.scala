@@ -23,5 +23,6 @@ object AddrRange {
     return None
   }
 
-  def isOverlap(addrs: Seq[AddrRange]): Boolean = getFirstOverlap(addrs).isDefined
+  def isOverlap(addrs: Seq[AddrRange]): Boolean =
+    getFirstOverlap(addrs).isDefined
 }
