@@ -15,7 +15,8 @@ import mill.util.VcsVersionModule
 // to properly generate and handle test directories and output files.
 // See: https://github.com/com-lihaoyi/mill/issues/3840
 
-object hammer extends SbtModule with ScalafmtModule with SonatypeCentralPublishModule
+object hammer extends SbtModule with ScalafmtModule
+    with SonatypeCentralPublishModule
     with VcsVersionModule { m =>
   override def scalaVersion = "2.13.18"
   def chiselVersion         = "7.15.0"
@@ -30,8 +31,8 @@ object hammer extends SbtModule with ScalafmtModule with SonatypeCentralPublishM
   )
 
   override def repositories: Simple[Seq[String]] = Seq(
-    "https://maven.aliyun.com/repository/central",
     "https://repo1.maven.org/maven2",
+    "https://maven.aliyun.com/repository/central",
   )
 
   override def mvnDeps = Seq(
