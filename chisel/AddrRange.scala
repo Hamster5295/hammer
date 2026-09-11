@@ -3,7 +3,7 @@ package hammer
 import chisel3._
 import chisel3.util._
 
-case class AddrRange(start: Int, length: Int) {
+case class AddrRange(start: BigInt, length: BigInt) {
   def end                  = start + length
   def isInside(addr: UInt) = addr >= start.U && addr < end.U
 
