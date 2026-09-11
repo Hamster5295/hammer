@@ -77,18 +77,20 @@ package object hammer {
     /*
      * Get a block of data from UInt.
      * The block is defined by its size.
-     * 
+     *
      * This is equal to
      * ```scala
      * value(index * (size + 1) - 1, index * size)
      * ```
-     * 
+     *
      * @param index
      * @param size
      * @return
      */
     def block(index: UInt, size: Int): UInt =
-      VecInit(Seq.tabulate(self.getWidth / size)(i => self((i + 1) * size - 1, i * size)))(index)
+      VecInit(Seq.tabulate(self.getWidth / size)(i =>
+        self((i + 1) * size - 1, i * size),
+      ))(index)
 
     /**
       * Get a span of data from UInt by a lsb position and size
@@ -195,15 +197,39 @@ package object hammer {
       * @return A wired UInt with fixed width
       */
     def width(width: Int): UInt = {
-        val wire = WireZero(UInt(width.W))
-        if(self.isWidthKnown) {
-            if(self.getWidth < width) wire := self
-            else wire := self.end(width)
-        }else {
-            wire := self
-        }
+      val wire = WireZero(UInt(width.W))
+      if (self.isWidthKnown) {
+        if (self.getWidth < width) wire := self
+        else wire                       := self.end(width)
+      } else {
+        wire := self
+      }
 
-        wire
+      wire
+    }
+
+    /**
+      * Split the UInt into multiple shorter slices
+      * 
+      * Will return 1 slice when target width is larger than the UInt itself
+      *
+      * @param width The width to be splitted to
+      * @return The splited wired Vec
+      */
+    def split(width: Int): Vec[UInt] = {
+      require(width > 0, "The UInt can't be splited to 0-widthed slices")
+      require(
+        self.widthKnown,
+        "The UInt should have fixed width to be splitted",
+      )
+
+      val cnt = math.ceil(self.getWidth.toFloat / width).toInt
+      val vec = WireZero(Vec(cnt, UInt(width.W)))
+
+      Seq.tabulate(cnt)(n =>
+        vec(n) := self(math.min((n + 1) * width - 1, self.getWidth), n * width),
+      )
+      vec
     }
   }
 
