@@ -5,14 +5,19 @@ Might be able to save time and hair of hardware devs
 
 ## Quick Start
 
-`Hammer` has no dependencies on either other libraries or build tools.
+Add the following dependency line to your `build.mill`
 
-> Why the heck are build tools SO COMPLECATED for Java's family?
-
-You can clone this repo to your project's `src/main/scala` folder, and everything is done!
-```shell
-git clone https://github.com/Hamster5295/hammer
+```scala
+override def mvnDeps = Seq(
+    // There might have been other dependencies
+    mvn"io.github:hamster5295::hammer:1.0.0",
+)
 ```
+
+The line above works at mill `1.0.0` and above.
+
+You'll need to transform according to your own build tool, i.e. mill `0.X` or sbt
+
 
 ## Documention
 
